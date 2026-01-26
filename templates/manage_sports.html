@@ -1,0 +1,96 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage Sports - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Manage Sports</h1>
+    
+    <!-- Form to add/edit sports -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 id="form-title">Add Sport</h2>
+            <form action="{{ url_for('admin.manage_sports') }}" method="POST" id="sportForm">
+                <input type="hidden" id="sport_id" name="sport_id">
+                
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea class="form-control" id="description" name="description"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="icon_url">Icon URL:</label>
+                    <input type="text" class="form-control" id="icon_url" name="icon_url">
+                </div>
+                
+                <button type="submit" name="add" class="btn btn-primary" id="submit-button">Add Sport</button>
+                <button type="button" class="btn btn-secondary" onclick="clearForm()">Cancel</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Existing sports table -->
+    <div class="card">
+        <div class="card-body">
+            <h2>Existing Sports</h2>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Icon URL</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sport in sports %}
+                        <tr>
+                            <td>{{ sport[0] }}</td>
+                            <td>{{ sport[1] }}</td>
+                            <td>{{ sport[2] }}</td>
+                            <td>{{ sport[3] }}</td>
+                            <td>
+                                <button class="btn btn-success btn-sm" onclick="editSport('{{ sport[0] }}', '{{ sport[1] }}', '{{ sport[2] }}', '{{ sport[3] }}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ sport[0] }}" data-action="{{ url_for('admin.manage_sports') }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include delete modal -->
+{% include 'delete_modal.html' %}
+
+<script>
+function editSport(id, name, description, icon_url) {
+    document.getElementById('sport_id').value = id;
+    document.getElementById('name').value = name;
+    document.getElementById('description').value = description || '';
+    document.getElementById('icon_url').value = icon_url || '';
+    document.getElementById('submit-button').innerText = 'Update Sport';
+    document.getElementById('form-title').innerText = 'Edit Sport';
+}
+
+function clearForm() {
+    document.getElementById('sportForm').reset();
+    document.getElementById('sport_id').value = '';
+    document.getElementById('submit-button').innerText = 'Add Sport';
+    document.getElementById('form-title').innerText = 'Add Sport';
+}
+</script>
+{% endblock %}

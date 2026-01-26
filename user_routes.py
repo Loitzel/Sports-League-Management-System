@@ -29,7 +29,7 @@ def user_teams():
     country_id = request.args.get('country_id')
 
     # Fetch available leagues and countries for filtering
-    cur.execute('SELECT league_id, name FROM leagues')
+    cur.execute('SELECT league_id, name FROM leagues ORDER BY name')
     leagues = cur.fetchall()
 
     cur.execute('SELECT country_id, name FROM countries ORDER BY country_id ASC')
@@ -83,13 +83,13 @@ def user_players():
     position = request.args.get('position')
 
     # Fetch available leagues, countries, teams, and positions for filtering
-    cur.execute('SELECT league_id, name FROM leagues')
+    cur.execute('SELECT league_id, name FROM leagues ORDER BY name')
     leagues = cur.fetchall()
 
     cur.execute('SELECT country_id, name FROM countries ORDER BY country_id ASC')
     countries = cur.fetchall()
 
-    cur.execute('SELECT team_id, name FROM teams')
+    cur.execute('SELECT team_id, name FROM teams ORDER BY name')
     teams = cur.fetchall()
 
     positions = ['Goalkeeper', 'Defence', 'Midfield', 'Offence']
@@ -164,13 +164,13 @@ def user_matches():
     matchday = request.args.get('matchday')
 
     # Fetch available leagues, countries, and teams for filtering
-    cur.execute('SELECT league_id, name FROM leagues')
+    cur.execute('SELECT league_id, name FROM leagues ORDER BY name')
     leagues = cur.fetchall()
 
     cur.execute('SELECT country_id, name FROM countries')
     countries = cur.fetchall()
 
-    cur.execute('SELECT team_id, name FROM teams')
+    cur.execute('SELECT team_id, name FROM teams ORDER BY name')
     teams = cur.fetchall()
 
     matchdays = [i for i in range(1, 39)]  # Assuming matchdays from 1 to 38
@@ -422,13 +422,13 @@ def user_scorers():
     team_id = request.args.get('team_id')
 
     # Fetch available leagues, countries, and teams for filtering
-    cur.execute('SELECT league_id, name FROM leagues')
+    cur.execute('SELECT league_id, name FROM leagues ORDER BY name')
     leagues = cur.fetchall()
 
     cur.execute('SELECT country_id, name FROM countries ORDER BY country_id ASC')
     countries = cur.fetchall()
 
-    cur.execute('SELECT team_id, name FROM teams')
+    cur.execute('SELECT team_id, name FROM teams ORDER BY name')
     teams = cur.fetchall()
 
     # Build the base query

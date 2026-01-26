@@ -7,8 +7,18 @@ admin_bp = Blueprint('admin', __name__)
 def admin_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
-        if 'user_id' not in session or not session.get('is_admin'):
+        if 'user_id' not in session or session.get('role') != 'admin':
             flash('You need to be an admin to access this page', 'error')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return wrap
+
+
+def editor_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'user_id' not in session or (session.get('role') != 'admin' and session.get('role') != 'editor'):
+            flash('You need to be an admin or editor to access this page', 'error')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return wrap
@@ -58,6 +68,44 @@ def manage_stadiums():
     cur.close()
     return render_template('manage_stadiums.html', stadiums=stadiums)
 
+@admin_bp.route('/manage_sports', methods=['GET', 'POST'])
+@admin_required
+def manage_sports():
+    db = get_db()
+    cur = db.cursor()
+
+    if request.method == 'POST':
+        try:
+            sport_id = request.form.get('sport_id')
+            name = request.form['name']
+            description = request.form['description']
+            icon_url = request.form['icon_url']
+
+            if 'add' in request.form:
+                cur.execute('INSERT INTO sports (name, description, icon_url) VALUES (%s, %s, %s)', 
+                            (name, description, icon_url))
+                flash('Sport added successfully', 'success')
+            elif 'edit' in request.form and sport_id:
+                cur.execute('UPDATE sports SET name = %s, description = %s, icon_url = %s WHERE sport_id = %s', 
+                            (name, description, icon_url, sport_id))
+                flash('Sport updated successfully', 'success')
+            elif 'delete' in request.form and sport_id:
+                cur.execute('DELETE FROM sports WHERE sport_id = %s', (sport_id,))
+                flash('Sport deleted successfully', 'success')
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            flash('An error occurred: ' + str(e), 'error')
+        finally:
+            cur.close()
+        return redirect(url_for('admin.manage_sports'))
+
+    cur.execute('SELECT sport_id, name, description, icon_url FROM sports')
+    sports = cur.fetchall()
+    cur.close()
+    return render_template('manage_sports.html', sports=sports)
+
+
 @admin_bp.route('/manage_leagues', methods=['GET', 'POST'])
 @admin_required
 def manage_leagues():
@@ -69,14 +117,15 @@ def manage_leagues():
             league_id = request.form.get('league_id')
             name = request.form['name']
             country = request.form['country']
+            sport_id = request.form.get('sport_id')
 
             if 'add' in request.form:
-                cur.execute('INSERT INTO leagues (name, country) VALUES (%s, %s)', 
-                            (name, country))
+                cur.execute('INSERT INTO leagues (name, country, sport_id) VALUES (%s, %s, %s)', 
+                            (name, country, sport_id))
                 flash('League added successfully', 'success')
             elif 'edit' in request.form and league_id:
-                cur.execute('UPDATE leagues SET name = %s, country = %s WHERE league_id = %s', 
-                            (name, country, league_id))
+                cur.execute('UPDATE leagues SET name = %s, country = %s, sport_id = %s WHERE league_id = %s', 
+                            (name, country, sport_id, league_id))
                 flash('League updated successfully', 'success')
             elif 'delete' in request.form and league_id:
                 cur.execute('DELETE FROM leagues WHERE league_id = %s', (league_id,))
@@ -89,13 +138,15 @@ def manage_leagues():
             cur.close()
         return redirect(url_for('admin.manage_leagues'))
 
-    cur.execute('SELECT league_id, name, country FROM leagues')
+    cur.execute('SELECT league_id, name, country, sport_id FROM leagues')
     leagues = cur.fetchall()
+    cur.execute('SELECT sport_id, name FROM sports')
+    sports = cur.fetchall()
     cur.close()
-    return render_template('manage_leagues.html', leagues=leagues)
+    return render_template('manage_leagues.html', leagues=leagues, sports=sports)
 
 @admin_bp.route('/manage_seasons', methods=['GET', 'POST'])
-@admin_required
+@editor_required
 def manage_seasons():
     db = get_db()
     cur = db.cursor()
@@ -130,13 +181,13 @@ def manage_seasons():
         JOIN leagues l ON s.league_id = l.league_id
     ''')
     seasons = cur.fetchall()
-    cur.execute('SELECT league_id, name FROM leagues')
+    cur.execute('SELECT league_id, name FROM leagues ORDER BY name')
     leagues = cur.fetchall()
     cur.close()
     return render_template('manage_seasons.html', seasons=seasons, leagues=leagues)
 
 @admin_bp.route('/manage_teams', methods=['GET', 'POST'])
-@admin_required
+@editor_required
 def manage_teams():
     db = get_db()
     cur = db.cursor()
@@ -173,7 +224,7 @@ def manage_teams():
     teams = cur.fetchall()
     cur.execute('SELECT stadium_id, name FROM stadiums')
     stadiums = cur.fetchall()
-    cur.execute('SELECT league_id, name FROM leagues')
+    cur.execute('SELECT league_id, name FROM leagues ORDER BY name')
     leagues = cur.fetchall()
     cur.execute('SELECT coach_id, name FROM coaches')
     coaches = cur.fetchall()
@@ -182,7 +233,7 @@ def manage_teams():
 
 
 @admin_bp.route('/manage_coaches', methods=['GET', 'POST'])
-@admin_required
+@editor_required
 def manage_coaches():
     db = get_db()
     cur = db.cursor()
@@ -228,7 +279,7 @@ def manage_coaches():
 
 
 @admin_bp.route('/manage_players', methods=['GET', 'POST'])
-@admin_required
+@editor_required
 def manage_players():
     db = get_db()
     cur = db.cursor()
@@ -274,7 +325,7 @@ def manage_players():
 
 
 @admin_bp.route('/manage_matches', methods=['GET', 'POST'])
-@admin_required
+@editor_required
 def manage_matches():
     db = get_db()
     cur = db.cursor()
@@ -319,11 +370,11 @@ def manage_matches():
         JOIN leagues l ON m.league_id = l.league_id
     ''')
     matches = cur.fetchall()
-    cur.execute('SELECT team_id, name FROM teams')
+    cur.execute('SELECT team_id, name FROM teams ORDER BY name')
     teams = cur.fetchall()
     cur.execute('SELECT season_id, year FROM seasons')
     seasons = cur.fetchall()
-    cur.execute('SELECT league_id, name FROM leagues')
+    cur.execute('SELECT league_id, name FROM leagues ORDER BY name')
     leagues = cur.fetchall()
     cur.close()
     return render_template('manage_matches.html', matches=matches, teams=teams, seasons=seasons, leagues=leagues)
@@ -455,11 +506,11 @@ def manage_scorers():
         JOIN leagues l ON s.league_id = l.league_id
     ''')
     scorers = cur.fetchall()
-    cur.execute('SELECT player_id, name FROM players')
+    cur.execute('SELECT player_id, name FROM players ORDER BY name')
     players = cur.fetchall()
     cur.execute('SELECT season_id, year FROM seasons')
     seasons = cur.fetchall()
-    cur.execute('SELECT league_id, name FROM leagues')
+    cur.execute('SELECT league_id, name FROM leagues ORDER BY name')
     leagues = cur.fetchall()
     cur.close()
     return render_template('manage_scorers.html', scorers=scorers, players=players, seasons=seasons, leagues=leagues)
@@ -577,11 +628,11 @@ def manage_users():
     if request.method == 'POST':
         try:
             user_id = request.form.get('user_id')
-            is_admin = request.form.get('is_admin') == 'true'
+            new_role = request.form.get('role')
 
-            cur.execute('UPDATE users SET is_admin = %s WHERE user_id = %s', (is_admin, user_id))
+            cur.execute('UPDATE users SET role = %s WHERE user_id = %s', (new_role, user_id))
             db.commit()
-            flash('User privilege updated successfully', 'success')
+            flash('User role updated successfully', 'success')
         except Exception as e:
             db.rollback()
             flash('An error occurred: ' + str(e), 'error')
@@ -589,7 +640,7 @@ def manage_users():
             cur.close()
         return redirect(url_for('admin.manage_users'))
 
-    cur.execute('SELECT user_id, username, is_admin FROM users')
+    cur.execute('SELECT user_id, username, role FROM users')
     users = cur.fetchall()
     cur.close()
 

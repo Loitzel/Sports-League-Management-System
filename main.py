@@ -34,7 +34,7 @@ def landing():
 @app.route('/home')
 def home():
     if 'user_id' in session:
-        if session.get('is_admin'):
+        if session.get('role') == 'admin':
             return redirect(url_for('admin'))
         else:
             return redirect(url_for('user'))
@@ -61,7 +61,7 @@ def login():
             
             # Check if user exists in local DB
             cur.execute(
-                'SELECT user_id, username, is_admin FROM users WHERE username = %s',
+                'SELECT user_id, username, role FROM users WHERE username = %s',
                 (username, ))
             user = cur.fetchone()
             
@@ -70,7 +70,7 @@ def login():
                 logger.info(f"User {username} found in local database, updating session info")
                 session['user_id'] = user[0]
                 session['username'] = user[1]
-                session['is_admin'] = user[2]
+                session['role'] = user[2]  # Store role instead of is_admin
             else:
                 # User doesn't exist in local DB, create a local account
                 logger.info(f"User {username} not found in local database, creating new local account")
@@ -80,14 +80,14 @@ def login():
                 
                 # Insert new user into local DB (not admin by default)
                 cur.execute(
-                    'INSERT INTO users (username, password, email, is_admin) VALUES (%s, %s, %s, %s) RETURNING user_id',
-                    (username, '', email, False))
+                    'INSERT INTO users (username, password, email, role) VALUES (%s, %s, %s, %s) RETURNING user_id',
+                    (username, '', email, 'user'))
                 user_id = cur.fetchone()[0]
                 db.commit()
                 
                 session['user_id'] = user_id
                 session['username'] = username
-                session['is_admin'] = False
+                session['role'] = 'user'
                 logger.info(f"New local account created for user: {username}")
                 
             cur.close()
@@ -99,7 +99,7 @@ def login():
             db = get_db()
             cur = db.cursor()
             cur.execute(
-                'SELECT user_id, username, password, is_admin FROM users WHERE username = %s',
+                'SELECT user_id, username, password, role FROM users WHERE username = %s',
                 (username, ))
             user = cur.fetchone()
             cur.close()
@@ -109,7 +109,7 @@ def login():
                 logger.info(f"Local authentication successful for user: {username}")
                 session['user_id'] = user[0]
                 session['username'] = user[1]
-                session['is_admin'] = user[3]
+                session['role'] = user[3]
                 return redirect(url_for('home'))
             else:
                 logger.warning(f"Authentication failed for user: {username} - invalid credentials")
@@ -147,8 +147,8 @@ def register():
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
             cur.execute(
-                'INSERT INTO users (username, password, email, is_admin) VALUES (%s, %s, %s, %s)',
-                (username, hashed_password, email, False))
+                'INSERT INTO users (username, password, email, role) VALUES (%s, %s, %s, %s)',
+                (username, hashed_password, email, 'user'))
             db.commit()
             cur.close()
             flash('Registration successful', 'success')
@@ -218,7 +218,7 @@ def search():
 
 @app.route('/admin')
 def admin():
-    if 'user_id' not in session or not session.get('is_admin'):
+    if 'user_id' not in session or session.get('role') != 'admin':
         return redirect(url_for('login'))
     return render_template('admin.html')
 
@@ -249,8 +249,8 @@ def add_user():
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
             cur.execute(
-                'INSERT INTO users (username, password, email) VALUES (%s, %s, %s)',
-                (username, hashed_password, email))
+                'INSERT INTO users (username, password, email, role) VALUES (%s, %s, %s, %s)',
+                (username, hashed_password, email, 'user'))
             db.commit()
             cur.close()
             flash('User added successfully', 'success')
