@@ -5,6 +5,11 @@ from user_routes import user_bp
 from config import Config
 import bcrypt
 from ldap_auth import authenticate_user, get_user_info
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__) 
 app.secret_key = Config.SECRET_KEY
@@ -42,10 +47,13 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
+        logger.info(f"Login attempt initiated for user: {username}")
+        
         # First try LDAP authentication
         ldap_authenticated = authenticate_user(username, password)
         
         if ldap_authenticated:
+            logger.info(f"LDAP authentication successful for user: {username}")
             # LDAP authentication successful
             # Check if user exists in local database, if not create one
             db = get_db()
@@ -59,11 +67,13 @@ def login():
             
             if user:
                 # User exists in local DB, update session info
+                logger.info(f"User {username} found in local database, updating session info")
                 session['user_id'] = user[0]
                 session['username'] = user[1]
                 session['is_admin'] = user[2]
             else:
                 # User doesn't exist in local DB, create a local account
+                logger.info(f"User {username} not found in local database, creating new local account")
                 # Get user info from LDAP
                 user_info = get_user_info(username)
                 email = user_info.get('email', '') if user_info else ''
@@ -78,10 +88,13 @@ def login():
                 session['user_id'] = user_id
                 session['username'] = username
                 session['is_admin'] = False
+                logger.info(f"New local account created for user: {username}")
                 
             cur.close()
+            logger.info(f"Login successful for user: {username}, redirecting to home")
             return redirect(url_for('home'))
         else:
+            logger.info(f"LDAP authentication failed for user: {username}, checking local database")
             # LDAP authentication failed, check if user exists locally
             db = get_db()
             cur = db.cursor()
@@ -93,11 +106,13 @@ def login():
             
             # If user exists locally and password matches local hash
             if user and user[2] and bcrypt.checkpw(password.encode('utf-8'), user[2].encode('utf-8')):
+                logger.info(f"Local authentication successful for user: {username}")
                 session['user_id'] = user[0]
                 session['username'] = user[1]
                 session['is_admin'] = user[3]
                 return redirect(url_for('home'))
             else:
+                logger.warning(f"Authentication failed for user: {username} - invalid credentials")
                 flash('Invalid username or password', 'error')
                 return redirect(url_for('login'))
 
