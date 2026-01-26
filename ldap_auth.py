@@ -44,7 +44,7 @@ def authenticate_user(username, password):
             search_base=Config.LDAP_BASE_DN,
             search_filter=search_filter,
             search_scope=SUBTREE,
-            attributes=['dn']
+            attributes=['uid']
         )
         
         if len(conn.entries) > 0:
