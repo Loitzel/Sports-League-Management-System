@@ -4,6 +4,7 @@ from admin_routes import admin_bp
 from user_routes import user_bp
 from config import Config
 import bcrypt
+from ldap_auth import authenticate_user, get_user_info
 
 app = Flask(__name__) 
 app.secret_key = Config.SECRET_KEY
@@ -38,23 +39,67 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        db = get_db()
-        cur = db.cursor()
         username = request.form['username']
         password = request.form['password']
-        cur.execute(
-            'SELECT user_id, username, password, is_admin FROM users WHERE username = %s',
-            (username, ))
-        user = cur.fetchone()
-        cur.close()
-        if user and bcrypt.checkpw(password.encode('utf-8'), user[2].encode('utf-8')):
-            session['user_id'] = user[0]
-            session['username'] = user[1]
-            session['is_admin'] = user[3]
+        
+        # First try LDAP authentication
+        ldap_authenticated = authenticate_user(username, password)
+        
+        if ldap_authenticated:
+            # LDAP authentication successful
+            # Check if user exists in local database, if not create one
+            db = get_db()
+            cur = db.cursor()
+            
+            # Check if user exists in local DB
+            cur.execute(
+                'SELECT user_id, username, is_admin FROM users WHERE username = %s',
+                (username, ))
+            user = cur.fetchone()
+            
+            if user:
+                # User exists in local DB, update session info
+                session['user_id'] = user[0]
+                session['username'] = user[1]
+                session['is_admin'] = user[2]
+            else:
+                # User doesn't exist in local DB, create a local account
+                # Get user info from LDAP
+                user_info = get_user_info(username)
+                email = user_info.get('email', '') if user_info else ''
+                
+                # Insert new user into local DB (not admin by default)
+                cur.execute(
+                    'INSERT INTO users (username, password, email, is_admin) VALUES (%s, %s, %s, %s) RETURNING user_id',
+                    (username, '', email, False))
+                user_id = cur.fetchone()[0]
+                db.commit()
+                
+                session['user_id'] = user_id
+                session['username'] = username
+                session['is_admin'] = False
+                
+            cur.close()
             return redirect(url_for('home'))
         else:
-            flash('Invalid username or password', 'error')
-            return redirect(url_for('login'))
+            # LDAP authentication failed, check if user exists locally
+            db = get_db()
+            cur = db.cursor()
+            cur.execute(
+                'SELECT user_id, username, password, is_admin FROM users WHERE username = %s',
+                (username, ))
+            user = cur.fetchone()
+            cur.close()
+            
+            # If user exists locally and password matches local hash
+            if user and user[2] and bcrypt.checkpw(password.encode('utf-8'), user[2].encode('utf-8')):
+                session['user_id'] = user[0]
+                session['username'] = user[1]
+                session['is_admin'] = user[3]
+                return redirect(url_for('home'))
+            else:
+                flash('Invalid username or password', 'error')
+                return redirect(url_for('login'))
 
     return render_template('login.html')
 
