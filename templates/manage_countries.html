@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
-{% block title %}Manage Countries - Admin Panel{% endblock %}
+{% block title %}Manage faculties - Admin Panel{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Manage Countries</h1>
+    <h1 class="mb-4">Manage faculties</h1>
     <div class="row">
         <div class="col-md-6">
-            <h2 id="form-title">Add Country</h2>
-            <form action="{{ url_for('admin.manage_countries') }}" method="POST">
-                <input type="hidden" id="country_id" name="country_id">
+            <h2 id="form-title">Add faculty</h2>
+            <form action="{{ url_for('admin.manage_faculties') }}" method="POST">
+                <input type="hidden" id="faculty_id" name="faculty_id">
                 <div class="form-group">
                     <label for="name">Name:</label>
                     <input type="text" class="form-control" id="name" name="name" required>
@@ -16,11 +16,11 @@
                     <label for="flag_url">Flag URL:</label>
                     <input type="text" class="form-control" id="flag_url" name="flag_url">
                 </div>
-                <button type="submit" name="submit" class="btn btn-primary" id="submit-button">Add Country</button>
+                <button type="submit" name="submit" class="btn btn-primary" id="submit-button">Add faculty</button>
             </form>
         </div>
         <div class="col-md-6">
-            <h2>Existing Countries</h2>
+            <h2>Existing faculties</h2>
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -32,18 +32,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for country in countries %}
+                    {% for faculty in faculties %}
                     <tr>
-                        <td>{{ country[0] }}</td>
-                        <td>{{ country[1] }}</td>
-                        <td>{{ country[2] }}</td>
+                        <td>{{ faculty[0] }}</td>
+                        <td>{{ faculty[1] }}</td>
+                        <td>{{ faculty[2] }}</td>
                         <td>
-                            <button class="btn btn-success btn-sm" onclick="editCountry('{{ country[0] }}', '{{ country[1] }}', '{{ country[2] }}')">
+                            <button class="btn btn-success btn-sm" onclick="editfaculty('{{ faculty[0] }}', '{{ faculty[1] }}', '{{ faculty[2] }}')">
                                 <i class="fa fa-pencil-alt"></i>
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ country[0] }}" data-action="{{ url_for('admin.manage_countries') }}">
+                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ faculty[0] }}" data-action="{{ url_for('admin.manage_faculties') }}">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </td>
@@ -80,12 +80,12 @@
 </div>
 
 <script>
-    function editCountry(id, name, flag_url) {
-        document.getElementById('country_id').value = id;
+    function editfaculty(id, name, flag_url) {
+        document.getElementById('faculty_id').value = id;
         document.getElementById('name').value = name;
         document.getElementById('flag_url').value = flag_url;
-        document.getElementById('submit-button').innerText = 'Update Country';
-        document.getElementById('form-title').innerText = 'Edit Country';
+        document.getElementById('submit-button').innerText = 'Update faculty';
+        document.getElementById('form-title').innerText = 'Edit faculty';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {

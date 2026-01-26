@@ -64,24 +64,24 @@ ALTER SEQUENCE public.coaches_coach_id_seq OWNED BY public.coaches.coach_id;
 
 --
 -- TOC entry 234 (class 1259 OID 106498)
--- Name: countries; Type: TABLE; Schema: public; Owner: sports_league_owner
+-- Name: faculties; Type: TABLE; Schema: public; Owner: sports_league_owner
 --
 
-CREATE TABLE public.countries (
-    country_id integer NOT NULL,
+CREATE TABLE public.faculties (
+    faculty_id integer NOT NULL,
     name character varying(255) NOT NULL,
     flag_url character varying(255)
 );
 
 
-ALTER TABLE public.countries OWNER TO sports_league_owner;
+ALTER TABLE public.faculties OWNER TO sports_league_owner;
 
 --
 -- TOC entry 233 (class 1259 OID 106497)
--- Name: countries_country_id_seq; Type: SEQUENCE; Schema: public; Owner: sports_league_owner
+-- Name: faculties_faculty_id_seq; Type: SEQUENCE; Schema: public; Owner: sports_league_owner
 --
 
-CREATE SEQUENCE public.countries_country_id_seq
+CREATE SEQUENCE public.faculties_faculty_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -90,15 +90,15 @@ CREATE SEQUENCE public.countries_country_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.countries_country_id_seq OWNER TO sports_league_owner;
+ALTER SEQUENCE public.faculties_faculty_id_seq OWNER TO sports_league_owner;
 
 --
 -- TOC entry 3480 (class 0 OID 0)
 -- Dependencies: 233
--- Name: countries_country_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: sports_league_owner
+-- Name: faculties_faculty_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: sports_league_owner
 --
 
-ALTER SEQUENCE public.countries_country_id_seq OWNED BY public.countries.country_id;
+ALTER SEQUENCE public.faculties_faculty_id_seq OWNED BY public.faculties.faculty_id;
 
 
 --
@@ -109,8 +109,8 @@ ALTER SEQUENCE public.countries_country_id_seq OWNED BY public.countries.country
 CREATE TABLE public.leagues (
     league_id integer NOT NULL,
     name character varying(255) NOT NULL,
-    country character varying(255) NOT NULL,
-    country_id integer,
+    faculty character varying(255) NOT NULL,
+    faculty_id integer,
     icon_url character varying(255),
     cl_spot integer,
     uel_spot integer,
@@ -566,10 +566,10 @@ ALTER TABLE ONLY public.coaches ALTER COLUMN coach_id SET DEFAULT nextval('publi
 
 --
 -- TOC entry 3253 (class 2604 OID 106501)
--- Name: countries country_id; Type: DEFAULT; Schema: public; Owner: sports_league_owner
+-- Name: faculties faculty_id; Type: DEFAULT; Schema: public; Owner: sports_league_owner
 --
 
-ALTER TABLE ONLY public.countries ALTER COLUMN country_id SET DEFAULT nextval('public.countries_country_id_seq'::regclass);
+ALTER TABLE ONLY public.faculties ALTER COLUMN faculty_id SET DEFAULT nextval('public.faculties_faculty_id_seq'::regclass);
 
 
 --
@@ -761,10 +761,10 @@ COPY public.coaches (coach_id, name, team_id, nationality) FROM stdin;
 --
 -- TOC entry 3467 (class 0 OID 106498)
 -- Dependencies: 234
--- Data for Name: countries; Type: TABLE DATA; Schema: public; Owner: sports_league_owner
+-- Data for Name: faculties; Type: TABLE DATA; Schema: public; Owner: sports_league_owner
 --
 
-COPY public.countries (country_id, name, flag_url) FROM stdin;
+COPY public.faculties (faculty_id, name, flag_url) FROM stdin;
 1	England	https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Flag_of_England.svg/1200px-Flag_of_England.svg.png
 2	Italy	https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Flag_of_Italy.svg/1200px-Flag_of_Italy.svg.png
 3	Spain	https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/1200px-Flag_of_Spain.svg.png
@@ -872,7 +872,7 @@ COPY public.countries (country_id, name, flag_url) FROM stdin;
 -- Data for Name: leagues; Type: TABLE DATA; Schema: public; Owner: sports_league_owner
 --
 
-COPY public.leagues (league_id, name, country, country_id, icon_url, cl_spot, uel_spot, relegation_spot) FROM stdin;
+COPY public.leagues (league_id, name, faculty, faculty_id, icon_url, cl_spot, uel_spot, relegation_spot) FROM stdin;
 2	Serie A	Italy	2	https://crests.football-data.org/SA.png	4	5	18
 3	La Liga	Spain	3	https://crests.football-data.org/PD.png	4	5	18
 4	Bundesliga	Germany	4	https://crests.football-data.org/BL1.png	4	5	16
@@ -9937,10 +9937,10 @@ SELECT pg_catalog.setval('public.coaches_coach_id_seq', 8, true);
 --
 -- TOC entry 3492 (class 0 OID 0)
 -- Dependencies: 233
--- Name: countries_country_id_seq; Type: SEQUENCE SET; Schema: public; Owner: sports_league_owner
+-- Name: faculties_faculty_id_seq; Type: SEQUENCE SET; Schema: public; Owner: sports_league_owner
 --
 
-SELECT pg_catalog.setval('public.countries_country_id_seq', 5, true);
+SELECT pg_catalog.setval('public.faculties_faculty_id_seq', 5, true);
 
 
 --
@@ -10044,11 +10044,11 @@ ALTER TABLE ONLY public.coaches
 
 --
 -- TOC entry 3275 (class 2606 OID 106505)
--- Name: countries countries_pkey; Type: CONSTRAINT; Schema: public; Owner: sports_league_owner
+-- Name: faculties faculties_pkey; Type: CONSTRAINT; Schema: public; Owner: sports_league_owner
 --
 
-ALTER TABLE ONLY public.countries
-    ADD CONSTRAINT countries_pkey PRIMARY KEY (country_id);
+ALTER TABLE ONLY public.faculties
+    ADD CONSTRAINT faculties_pkey PRIMARY KEY (faculty_id);
 
 
 --
@@ -10206,11 +10206,11 @@ ALTER TABLE ONLY public.coaches
 
 --
 -- TOC entry 3284 (class 2606 OID 106506)
--- Name: leagues leagues_country_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: sports_league_owner
+-- Name: leagues leagues_faculty_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: sports_league_owner
 --
 
 ALTER TABLE ONLY public.leagues
-    ADD CONSTRAINT leagues_country_id_fkey FOREIGN KEY (country_id) REFERENCES public.countries(country_id);
+    ADD CONSTRAINT leagues_faculty_id_fkey FOREIGN KEY (faculty_id) REFERENCES public.faculties(faculty_id);
 
 
 --

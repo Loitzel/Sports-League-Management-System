@@ -68,15 +68,15 @@ def manage_leagues():
         try:
             league_id = request.form.get('league_id')
             name = request.form['name']
-            country = request.form['country']
+            faculty = request.form['faculty']
 
             if 'add' in request.form:
-                cur.execute('INSERT INTO leagues (name, country) VALUES (%s, %s)', 
-                            (name, country))
+                cur.execute('INSERT INTO leagues (name, faculty) VALUES (%s, %s)', 
+                            (name, faculty))
                 flash('League added successfully', 'success')
             elif 'edit' in request.form and league_id:
-                cur.execute('UPDATE leagues SET name = %s, country = %s WHERE league_id = %s', 
-                            (name, country, league_id))
+                cur.execute('UPDATE leagues SET name = %s, faculty = %s WHERE league_id = %s', 
+                            (name, faculty, league_id))
                 flash('League updated successfully', 'success')
             elif 'delete' in request.form and league_id:
                 cur.execute('DELETE FROM leagues WHERE league_id = %s', (league_id,))
@@ -89,7 +89,7 @@ def manage_leagues():
             cur.close()
         return redirect(url_for('admin.manage_leagues'))
 
-    cur.execute('SELECT league_id, name, country FROM leagues')
+    cur.execute('SELECT league_id, name, faculty FROM leagues')
     leagues = cur.fetchall()
     cur.close()
     return render_template('manage_leagues.html', leagues=leagues)
@@ -330,43 +330,43 @@ def manage_matches():
 
 
 
-@admin_bp.route('/manage_countries', methods=['GET', 'POST'])
+@admin_bp.route('/manage_faculties', methods=['GET', 'POST'])
 @admin_required
-def manage_countries():
+def manage_faculties():
     db = get_db()
     cur = db.cursor()
 
     if request.method == 'POST':
         try:
-            country_id = request.form.get('country_id')
+            faculty_id = request.form.get('faculty_id')
             name = request.form['name']
             flag_url = request.form['flag_url']
 
             if 'submit' in request.form:
-                if country_id:
-                    cur.execute('UPDATE countries SET name = %s, flag_url = %s WHERE country_id = %s', 
-                                (name, flag_url, country_id))
-                    flash('Country updated successfully', 'success')
+                if faculty_id:
+                    cur.execute('UPDATE faculties SET name = %s, flag_url = %s WHERE faculty_id = %s', 
+                                (name, flag_url, faculty_id))
+                    flash('faculty updated successfully', 'success')
                 else:
-                    cur.execute('INSERT INTO countries (name, flag_url) VALUES (%s, %s)', 
+                    cur.execute('INSERT INTO faculties (name, flag_url) VALUES (%s, %s)', 
                                 (name, flag_url))
-                    flash('Country added successfully', 'success')
+                    flash('faculty added successfully', 'success')
             elif 'delete' in request.form:
-                country_id = request.form['deleteEntityId']
-                cur.execute('DELETE FROM countries WHERE country_id = %s', (country_id,))
-                flash('Country deleted successfully', 'success')
+                faculty_id = request.form['deleteEntityId']
+                cur.execute('DELETE FROM faculties WHERE faculty_id = %s', (faculty_id,))
+                flash('faculty deleted successfully', 'success')
             db.commit()
         except Exception as e:
             db.rollback()
             flash('An error occurred: ' + str(e), 'error')
         finally:
             cur.close()
-        return redirect(url_for('admin.manage_countries'))
+        return redirect(url_for('admin.manage_faculties'))
 
-    cur.execute('SELECT country_id, name, flag_url FROM countries')
-    countries = cur.fetchall()
+    cur.execute('SELECT faculty_id, name, flag_url FROM faculties')
+    faculties = cur.fetchall()
     cur.close()
-    return render_template('manage_countries.html', countries=countries)
+    return render_template('manage_faculties.html', faculties=faculties)
 
 
 

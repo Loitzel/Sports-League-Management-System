@@ -13,11 +13,11 @@
             </select>
         </div>
         <div class="form-group col-md-4">
-            <label for="country_id">Country</label>
-            <select id="country_id" name="country_id" class="form-control">
-                <option value="">All Countries</option>
-                {% for country in countries %}
-                    <option value="{{ country[0] }}" {% if request.args.get('country_id') == str(country[0]) %}selected{% endif %}>{{ country[1] }}</option>
+            <label for="faculty_id">faculty</label>
+            <select id="faculty_id" name="faculty_id" class="form-control">
+                <option value="">All faculties</option>
+                {% for faculty in faculties %}
+                    <option value="{{ faculty[0] }}" {% if request.args.get('faculty_id') == str(faculty[0]) %}selected{% endif %}>{{ faculty[1] }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -40,29 +40,29 @@
     <ul class="pagination justify-content-center">
         {% if page > 1 %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('user.user_teams', page=1, league_id=request.args.get('league_id'), country_id=request.args.get('country_id')) }}" aria-label="First">
+                <a class="page-link" href="{{ url_for('user.user_teams', page=1, league_id=request.args.get('league_id'), faculty_id=request.args.get('faculty_id')) }}" aria-label="First">
                     <span aria-hidden="true">&laquo;&laquo;</span>
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('user.user_teams', page=page-1, league_id=request.args.get('league_id'), country_id=request.args.get('country_id')) }}" aria-label="Previous">
+                <a class="page-link" href="{{ url_for('user.user_teams', page=page-1, league_id=request.args.get('league_id'), faculty_id=request.args.get('faculty_id')) }}" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
         {% endif %}
         {% for p in range(max(1, page-2), min(total_pages, page+2) + 1) %}
             <li class="page-item {% if page == p %}active{% endif %}">
-                <a class="page-link" href="{{ url_for('user.user_teams', page=p, league_id=request.args.get('league_id'), country_id=request.args.get('country_id')) }}">{{ p }}</a>
+                <a class="page-link" href="{{ url_for('user.user_teams', page=p, league_id=request.args.get('league_id'), faculty_id=request.args.get('faculty_id')) }}">{{ p }}</a>
             </li>
         {% endfor %}
         {% if page < total_pages %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('user.user_teams', page=page+1, league_id=request.args.get('league_id'), country_id=request.args.get('country_id')) }}" aria-label="Next">
+                <a class="page-link" href="{{ url_for('user.user_teams', page=page+1, league_id=request.args.get('league_id'), faculty_id=request.args.get('faculty_id')) }}" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('user.user_teams', page=total_pages, league_id=request.args.get('league_id'), country_id=request.args.get('country_id')) }}" aria-label="Last">
+                <a class="page-link" href="{{ url_for('user.user_teams', page=total_pages, league_id=request.args.get('league_id'), faculty_id=request.args.get('faculty_id')) }}" aria-label="Last">
                     <span aria-hidden="true">&raquo;&raquo;</span>
                 </a>
             </li>

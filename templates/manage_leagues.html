@@ -13,8 +13,8 @@
                     <input type="text" class="form-control" id="name" name="name" required>
                 </div>
                 <div class="form-group">
-                    <label for="country">Country:</label>
-                    <input type="text" class="form-control" id="country" name="country" required>
+                    <label for="faculty">faculty:</label>
+                    <input type="text" class="form-control" id="faculty" name="faculty" required>
                 </div>
                 <button type="submit" name="add" class="btn btn-primary" id="submit-button">Add League</button>
             </form>
@@ -26,7 +26,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
-                        <th>Country</th>
+                        <th>faculty</th>
                         <th>Edit</th>
                         <th>Delete</th>
                     </tr>
@@ -59,10 +59,10 @@
 {% include 'delete_modal.html' %}
 
 <script>
-    function editLeague(id, name, country) {
+    function editLeague(id, name, faculty) {
         document.getElementById('league_id').value = id;
         document.getElementById('name').value = name;
-        document.getElementById('country').value = country;
+        document.getElementById('faculty').value = faculty;
         document.getElementById('submit-button').innerText = 'Update League';
         document.getElementById('form-title').innerText = 'Edit League';
     }

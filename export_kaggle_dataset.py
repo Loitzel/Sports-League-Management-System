@@ -82,7 +82,7 @@ class KaggleDatasetExporter:
             "matches": "Contains all match information including scores, dates, and teams",
             "players": "Player information including personal details and team affiliations",
             "teams": "Team information including names, leagues, and statistics",
-            "leagues": "League information including country and competition details",
+            "leagues": "League information including faculty and competition details",
             "coaches": "Coach information including team affiliations",
             "referees": "Referee information for matches",
             "stadiums": "Stadium information including capacity and location",

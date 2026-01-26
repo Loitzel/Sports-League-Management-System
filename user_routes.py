@@ -26,14 +26,14 @@ def user_teams():
 
     # Get filter parameters from the request
     league_id = request.args.get('league_id')
-    country_id = request.args.get('country_id')
+    faculty_id = request.args.get('faculty_id')
 
-    # Fetch available leagues and countries for filtering
+    # Fetch available leagues and faculties for filtering
     cur.execute('SELECT league_id, name FROM leagues')
     leagues = cur.fetchall()
 
-    cur.execute('SELECT country_id, name FROM countries ORDER BY country_id ASC')
-    countries = cur.fetchall()
+    cur.execute('SELECT faculty_id, name FROM faculties ORDER BY faculty_id ASC')
+    faculties = cur.fetchall()
 
     # Build the base query
     query = """
@@ -47,9 +47,9 @@ def user_teams():
     if league_id:
         query += " AND league_id = %s"
         filters.append(league_id)
-    if country_id:
-        query += " AND nationality = (SELECT name FROM countries WHERE country_id = %s)"
-        filters.append(country_id)
+    if faculty_id:
+        query += " AND nationality = (SELECT name FROM faculties WHERE faculty_id = %s)"
+        filters.append(faculty_id)
 
     query += " LIMIT %s OFFSET %s"
     filters.append(20)
@@ -58,13 +58,13 @@ def user_teams():
     cur.execute(query, filters)
     teams = cur.fetchall()
 
-    cur.execute('SELECT COUNT(*) FROM teams WHERE 1=1 ' + (' AND league_id = %s' if league_id else '') + (' AND nationality = (SELECT name FROM countries WHERE country_id = %s)' if country_id else ''), filters[:-2])
+    cur.execute('SELECT COUNT(*) FROM teams WHERE 1=1 ' + (' AND league_id = %s' if league_id else '') + (' AND nationality = (SELECT name FROM faculties WHERE faculty_id = %s)' if faculty_id else ''), filters[:-2])
     total_teams = cur.fetchone()[0]
     cur.close()
 
     total_pages = (total_teams + 19) // 20
 
-    return render_template('user_teams.html', teams=teams, page=request.args.get('page', 1, type=int), total_pages=total_pages, leagues=leagues, countries=countries, max=max, min=min, str=str)
+    return render_template('user_teams.html', teams=teams, page=request.args.get('page', 1, type=int), total_pages=total_pages, leagues=leagues, faculties=faculties, max=max, min=min, str=str)
 
 @user_bp.route('/user/players')
 @login_required
@@ -78,16 +78,16 @@ def user_players():
 
     # Get filter parameters from the request
     league_id = request.args.get('league_id')
-    country_id = request.args.get('country_id')
+    faculty_id = request.args.get('faculty_id')
     team_id = request.args.get('team_id')
     position = request.args.get('position')
 
-    # Fetch available leagues, countries, teams, and positions for filtering
+    # Fetch available leagues, faculties, teams, and positions for filtering
     cur.execute('SELECT league_id, name FROM leagues')
     leagues = cur.fetchall()
 
-    cur.execute('SELECT country_id, name FROM countries ORDER BY country_id ASC')
-    countries = cur.fetchall()
+    cur.execute('SELECT faculty_id, name FROM faculties ORDER BY faculty_id ASC')
+    faculties = cur.fetchall()
 
     cur.execute('SELECT team_id, name FROM teams')
     teams = cur.fetchall()
@@ -99,7 +99,7 @@ def user_players():
         SELECT p.player_id, p.name, p.position, t.crestURL, t.name, c.flag_url
         FROM players p
         JOIN teams t ON p.team_id = t.team_id
-        JOIN countries c ON p.nationality = c.name
+        JOIN faculties c ON p.nationality = c.name
         WHERE 1=1
     """
     filters = []
@@ -108,9 +108,9 @@ def user_players():
     if league_id:
         query += " AND t.league_id = %s"
         filters.append(league_id)
-    if country_id:
-        query += " AND c.country_id = %s"
-        filters.append(country_id)
+    if faculty_id:
+        query += " AND c.faculty_id = %s"
+        filters.append(faculty_id)
     if team_id:
         query += " AND p.team_id = %s"
         filters.append(team_id)
@@ -125,13 +125,13 @@ def user_players():
     cur.execute(query, filters)
     players = cur.fetchall()
 
-    cur.execute('SELECT COUNT(*) FROM players p JOIN teams t ON p.team_id = t.team_id JOIN countries c ON p.nationality = c.name WHERE 1=1' + (' AND t.league_id = %s' if league_id else '') + (' AND c.country_id = %s' if country_id else '') + (' AND p.team_id = %s' if team_id else '') + (' AND p.position = %s' if position else ''), filters[:-2])
+    cur.execute('SELECT COUNT(*) FROM players p JOIN teams t ON p.team_id = t.team_id JOIN faculties c ON p.nationality = c.name WHERE 1=1' + (' AND t.league_id = %s' if league_id else '') + (' AND c.faculty_id = %s' if faculty_id else '') + (' AND p.team_id = %s' if team_id else '') + (' AND p.position = %s' if position else ''), filters[:-2])
     total_players = cur.fetchone()[0]
     cur.close()
 
     total_pages = (total_players + per_page - 1) // per_page
 
-    return render_template('user_players.html', players=players, page=page, total_pages=total_pages, leagues=leagues, countries=countries, teams=teams, positions=positions, max=max, min=min, str=str)
+    return render_template('user_players.html', players=players, page=page, total_pages=total_pages, leagues=leagues, faculties=faculties, teams=teams, positions=positions, max=max, min=min, str=str)
 
 
 
@@ -144,7 +144,7 @@ def user_leagues():
     cur.execute('''
         SELECT l.league_id, l.name, c.flag_url, l.icon_url
         FROM leagues l
-        JOIN countries c ON l.country_id = c.country_id
+        JOIN faculties c ON l.faculty_id = c.faculty_id
     ''')
     leagues = cur.fetchall()
     cur.close()
@@ -159,16 +159,16 @@ def user_matches():
 
     # Get filter parameters from the request
     league_id = request.args.get('league_id')
-    country_id = request.args.get('country_id')
+    faculty_id = request.args.get('faculty_id')
     team_id = request.args.get('team_id')
     matchday = request.args.get('matchday')
 
-    # Fetch available leagues, countries, and teams for filtering
+    # Fetch available leagues, faculties, and teams for filtering
     cur.execute('SELECT league_id, name FROM leagues')
     leagues = cur.fetchall()
 
-    cur.execute('SELECT country_id, name FROM countries')
-    countries = cur.fetchall()
+    cur.execute('SELECT faculty_id, name FROM faculties')
+    faculties = cur.fetchall()
 
     cur.execute('SELECT team_id, name FROM teams')
     teams = cur.fetchall()
@@ -198,10 +198,10 @@ def user_matches():
     if league_id:
         query += " AND m.league_id = %s"
         filters.append(league_id)
-    if country_id:
-        query += " AND (t1.country_id = %s OR t2.country_id = %s)"
-        filters.append(country_id)
-        filters.append(country_id)
+    if faculty_id:
+        query += " AND (t1.faculty_id = %s OR t2.faculty_id = %s)"
+        filters.append(faculty_id)
+        filters.append(faculty_id)
     if team_id:
         query += " AND (m.home_team_id = %s OR m.away_team_id = %s)"
         filters.append(team_id)
@@ -216,7 +216,7 @@ def user_matches():
     matches = cur.fetchall()
     cur.close()
 
-    return render_template('user_matches.html', matches=matches, leagues=leagues, countries=countries, teams=teams, matchdays=matchdays, str=str)
+    return render_template('user_matches.html', matches=matches, leagues=leagues, faculties=faculties, teams=teams, matchdays=matchdays, str=str)
 
 
 
@@ -232,7 +232,7 @@ def profile_team(team_id):
         FROM teams t 
         JOIN stadiums s ON t.stadium_id = s.stadium_id 
         JOIN coaches c ON t.coach_id = c.coach_id 
-        JOIN countries co ON c.nationality = co.name
+        JOIN faculties co ON c.nationality = co.name
         JOIN leagues l ON t.league_id = l.league_id
         WHERE t.team_id = %s
     """, (team_id,))
@@ -242,7 +242,7 @@ def profile_team(team_id):
     cur.execute("""
         SELECT p.player_id, p.name, p.date_of_birth, p.position, p.nationality, c.flag_url
         FROM players p 
-        JOIN countries c ON p.nationality = c.name
+        JOIN faculties c ON p.nationality = c.name
         WHERE p.team_id = %s
     """, (team_id,))
     players = cur.fetchall()
@@ -294,7 +294,7 @@ def profile_player(player_id):
         SELECT p.name, p.date_of_birth, p.position, t.team_id, t.name AS team_name, c.flag_url, c.name AS nationality
         FROM players p 
         JOIN teams t ON p.team_id = t.team_id 
-        JOIN countries c ON p.nationality = c.name
+        JOIN faculties c ON p.nationality = c.name
         WHERE p.player_id = %s
     """, (player_id,))
     player = cur.fetchone()
@@ -348,7 +348,7 @@ def profile_match(match_id):
         JOIN stadiums st ON t1.stadium_id = st.stadium_id
         JOIN match_referees mr ON m.match_id = mr.match_id
         JOIN referees r ON mr.referee_id = r.referee_id
-        JOIN countries c ON r.nationality = c.name
+        JOIN faculties c ON r.nationality = c.name
         WHERE m.match_id = %s
     """, (match_id,))
     match = cur.fetchone()
@@ -379,9 +379,9 @@ def profile_league(league_id):
     cur = db.cursor()
 
     cur.execute("""
-        SELECT l.name, c.name AS country, l.icon_url, c.flag_url, l.cl_spot, l.uel_spot, l.relegation_spot
+        SELECT l.name, c.name AS faculty, l.icon_url, c.flag_url, l.cl_spot, l.uel_spot, l.relegation_spot
         FROM leagues l
-        JOIN countries c ON l.country_id = c.country_id
+        JOIN faculties c ON l.faculty_id = c.faculty_id
         WHERE l.league_id = %s
     """, (league_id,))
     league = cur.fetchone()
@@ -418,15 +418,15 @@ def user_scorers():
 
     # Get filter parameters from the request
     league_id = request.args.get('league_id')
-    country_id = request.args.get('country_id')
+    faculty_id = request.args.get('faculty_id')
     team_id = request.args.get('team_id')
 
-    # Fetch available leagues, countries, and teams for filtering
+    # Fetch available leagues, faculties, and teams for filtering
     cur.execute('SELECT league_id, name FROM leagues')
     leagues = cur.fetchall()
 
-    cur.execute('SELECT country_id, name FROM countries ORDER BY country_id ASC')
-    countries = cur.fetchall()
+    cur.execute('SELECT faculty_id, name FROM faculties ORDER BY faculty_id ASC')
+    faculties = cur.fetchall()
 
     cur.execute('SELECT team_id, name FROM teams')
     teams = cur.fetchall()
@@ -445,9 +445,9 @@ def user_scorers():
     if league_id:
         query += " AND sc.league_id = %s"
         filters.append(league_id)
-    if country_id:
-        query += " AND p.nationality = (SELECT name FROM countries WHERE country_id = %s)"
-        filters.append(country_id)
+    if faculty_id:
+        query += " AND p.nationality = (SELECT name FROM faculties WHERE faculty_id = %s)"
+        filters.append(faculty_id)
     if team_id:
         query += " AND p.team_id = %s"
         filters.append(team_id)
@@ -458,6 +458,6 @@ def user_scorers():
     scorers = cur.fetchall()
     cur.close()
 
-    return render_template('user_scorers.html', scorers=scorers, leagues=leagues, countries=countries, teams=teams, str=str)
+    return render_template('user_scorers.html', scorers=scorers, leagues=leagues, faculties=faculties, teams=teams, str=str)
 
 
