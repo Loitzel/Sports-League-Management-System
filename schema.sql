@@ -525,9 +525,9 @@ CREATE TABLE public.users (
     username character varying(255) NOT NULL,
     password character varying(255) NOT NULL,
     email character varying(255) NOT NULL,
-    is_admin boolean DEFAULT false
+    is_admin boolean DEFAULT false,
+    is_editor boolean DEFAULT false 
 );
-
 
 ALTER TABLE public.users OWNER TO sports_league_owner;
 
@@ -9915,15 +9915,15 @@ COPY public.teams (team_id, name, founded_year, stadium_id, league_id, coach_id,
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: sports_league_owner
 --
 
-COPY public.users (user_id, username, password, email, is_admin) FROM stdin;
-2	geydruqbaku23	12345678	geydruqbaku23@gmail.com	f
-3	1	1234	gayibov21@itu.edu.tr	f
-1	kaimg	12345678	qayibovkamran@gmail.com	f
-6	geniy	$2b$12$715sLtvK3Ubw3kIK4s3PBeYwYb/Bg.e4CNNkNlpN9cnjMjAVmOhsO	geniy@gmail.com	f
-7	12	$2b$12$NATEwLpl1Dxvu8eaM8vUyuAVKLr8Wt2TRc8MVWiN7RNwRx86GbJjG	adrf@gmail.com	f
-4	admin	$2b$12$715sLtvK3Ubw3kIK4s3PBeYwYb/Bg.e4CNNkNlpN9cnjMjAVmOhsO	admin@example.com	t
+COPY public.users (user_id, username, password, email, is_admin, is_editor) FROM stdin;
+1	kaimg	12345678	qayibovkamran@gmail.com	f	f
+2	geydruqbaku23	12345678	geydruqbaku23@gmail.com	f	f
+3	1	1234	gayibov21@itu.edu.tr	f	f
+4	admin	$2b$12$715sLtvK3Ubw3kIK4s3PBeYwYb/Bg.e4CNNkNlpN9cnjMjAVmOhsO	admin@example.com	t	f
+6	geniy	$2b$12$715sLtvK3Ubw3kIK4s3PBeYwYb/Bg.e4CNNkNpjMjAVmOhsO	geniy@gmail.com	f	f
+7	12	$2b$12$NATEwLpl1Dxvu8eaM8vUyuAVKLr8Wt2TRc8MVWiN7RNwRx86GbJjG	adrf@gmail.com	f	f
+8	editor1	$2b$12$715sLtvK3Ubw3kIK4s3PBeYwYb/Bg.e4CNNkNlpN9cnjMjAVmOhsO	editor1@example.com	f	t
 \.
-
 
 --
 -- TOC entry 3491 (class 0 OID 0)
