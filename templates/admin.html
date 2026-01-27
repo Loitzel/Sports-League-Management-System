@@ -1,37 +1,239 @@
 {% extends "layout.html" %}
-{% block title %}Admin Panel - Sports League Management{% endblock %}
+{% block title %}
+    {% if session.get('is_admin') %}
+        Admin Panel - Sports League Management
+    {% elif session.get('is_editor') %}
+        Editor Panel - Sports League Management
+    {% endif %}
+{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h1>Admin Panel</h1>
+    {% if session.get('is_admin') %}
+        <h1>Administrator Dashboard</h1>
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-user-shield"></i> You have full administrator privileges.
+        </div>
+    {% elif session.get('is_editor') %}
+        <h1>Editor Dashboard</h1>
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-edit"></i> You have editor privileges. You can edit existing records but cannot create new ones or delete.
+        </div>
+    {% else %}
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> Access denied. Admin or editor privileges required.
+        </div>
+        <script>
+            setTimeout(function() {
+                window.location.href = "{{ url_for('user') }}";
+            }, 3000);
+        </script>
+        <p>Redirecting to user dashboard...</p>
+        {% endif %}
+
+    {% if session.get('is_admin') or session.get('is_editor') %}
     <div class="row">
         <div class="col-md-3">
             <div class="list-group">
-                 <a href="{{ url_for('admin.manage_users') }}" class="list-group-item list-group-item-action">Manage Users</a>
-                <a href="{{ url_for('admin.manage_stadiums') }}" class="list-group-item list-group-item-action">Manage Stadiums</a>
-                <a href="{{ url_for('admin.manage_leagues') }}" class="list-group-item list-group-item-action">Manage Leagues</a>
-                <a href="{{ url_for('admin.manage_seasons') }}" class="list-group-item list-group-item-action">Manage Seasons</a>
-                <a href="{{ url_for('admin.manage_teams') }}" class="list-group-item list-group-item-action">Manage Teams</a>
-                <a href="{{ url_for('admin.manage_coaches') }}" class="list-group-item list-group-item-action">Manage Coaches</a>
-                <a href="{{ url_for('admin.manage_players') }}" class="list-group-item list-group-item-action">Manage Players</a>
-                <a href="{{ url_for('admin.manage_matches') }}" class="list-group-item list-group-item-action">Manage Matches</a>
-                <a href="{{ url_for('admin.manage_scores') }}" class="list-group-item list-group-item-action">Manage Scores</a>
-                <a href="{{ url_for('admin.manage_countries') }}" class="list-group-item list-group-item-action">Manage Countries</a>
-                <a href="{{ url_for('admin.manage_referees') }}" class="list-group-item list-group-item-action">Manage Referees</a>
-                <a href="{{ url_for('admin.manage_scorers') }}" class="list-group-item list-group-item-action">Manage Scorers</a>
-                <a href="{{ url_for('admin.manage_standings') }}" class="list-group-item list-group-item-action">Manage Standings</a>
+                {% if session.get('is_admin') %}
+                <a href="{{ url_for('admin.manage_users') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-users"></i> Manage Users
+                    <span class="badge bg-primary float-end">Admin Only</span>
+                </a>
+                {% endif %}
+                
+                <a href="{{ url_for('admin.manage_stadiums') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-landmark"></i> Manage Stadiums
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_leagues') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-trophy"></i> Manage Leagues
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_seasons') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-calendar-alt"></i> Manage Seasons
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_teams') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-users"></i> Manage Teams
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_coaches') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-chalkboard-teacher"></i> Manage Coaches
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_players') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-running"></i> Manage Players
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_matches') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-futbol"></i> Manage Matches
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_scores') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-chart-line"></i> Manage Scores
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_countries') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-flag"></i> Manage Countries
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_referees') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-whistle"></i> Manage Referees
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_scorers') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-futbol"></i> Manage Scorers
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{{ url_for('admin.manage_standings') }}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-list-ol"></i> Manage Standings
+                    {% if session.get('is_editor') %}
+                    <span class="badge bg-warning text-dark float-end">Edit Only</span>
+                    {% endif %}
+                </a>
             </div>
         </div>
         <div class="col-md-9">
-            <h2>Welcome to the Admin Dashboard</h2>
-            <p>Use the sidebar to manage the system.</p>
+            {% if session.get('is_admin') %}
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> System Overview</h5>
+                </div>
+                <div class="card-body">
+                    <p>Welcome, Administrator! You have full access to all system functions.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-cog"></i> Administrator Functions:</h6>
+                                    <ul>
+                                        <li>Create new records</li>
+                                        <li>Edit existing records</li>
+                                        <li>Delete records</li>
+                                        <li>Manage user permissions</li>
+                                        <li>Full system control</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-shield-alt"></i> System Security:</h6>
+                                    <p>You are responsible for maintaining system integrity and user management.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% elif session.get('is_editor') %}
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Editor Permissions</h5>
+                </div>
+                <div class="card-body">
+                    <p>Welcome, Editor! You can edit existing records to ensure data accuracy and consistency.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-check-circle text-success"></i> Allowed Actions:</h6>
+                                    <ul>
+                                        <li>Edit existing stadium information</li>
+                                        <li>Update league details</li>
+                                        <li>Modify team rosters</li>
+                                        <li>Update match scores</li>
+                                        <li>Edit player statistics</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-times-circle text-danger"></i> Restricted Actions:</h6>
+                                    <ul>
+                                        <li>Cannot create new records</li>
+                                        <li>Cannot delete existing records</li>
+                                        <li>Cannot manage user accounts</li>
+                                        <li>Cannot modify user permissions</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> Your changes are logged and administrators can review them.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
+    {% endif %}
+    
+    {% if session.get('is_admin') or session.get('is_editor') %}
     <nav class="mt-4">
         <ul class="nav">
             <li class="nav-item">
-                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                <a href="{{ url_for('home') }}" class="nav-link">
+                    <i class="fas fa-home"></i> Back to Home
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('logout') }}" class="nav-link text-danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
             </li>
         </ul>
     </nav>
+    {% endif %}
 </div>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    .list-group-item:hover {
+        transform: translateX(5px);
+        transition: transform 0.3s ease;
+    }
+    .badge {
+        font-size: 0.7em;
+    }
+</style>
 {% endblock %}

@@ -36,6 +36,8 @@ def home():
     if 'user_id' in session:
         if session.get('is_admin'):
             return redirect(url_for('admin'))
+        elif session.get('is_editor'):
+            return redirect(url_for('admin'))  # TODO: Create separate editor homepage
         else:
             return redirect(url_for('user'))
     else:
@@ -61,7 +63,7 @@ def login():
             
             # Check if user exists in local DB
             cur.execute(
-                'SELECT user_id, username, is_admin FROM users WHERE username = %s',
+                'SELECT user_id, username, is_admin, is_editor FROM users WHERE username = %s',
                 (username, ))
             user = cur.fetchone()
             
@@ -71,6 +73,7 @@ def login():
                 session['user_id'] = user[0]
                 session['username'] = user[1]
                 session['is_admin'] = user[2]
+                session['is_editor'] = user[3]
             else:
                 # User doesn't exist in local DB, create a local account
                 logger.info(f"User {username} not found in local database, creating new local account")
@@ -78,16 +81,17 @@ def login():
                 user_info = get_user_info(username)
                 email = user_info.get('email', '') if user_info else ''
                 
-                # Insert new user into local DB (not admin by default)
+                # Insert new user into local DB (not admin or editor by default)
                 cur.execute(
-                    'INSERT INTO users (username, password, email, is_admin) VALUES (%s, %s, %s, %s) RETURNING user_id',
-                    (username, '', email, False))
+                    'INSERT INTO users (username, password, email, is_admin, is_editor) VALUES (%s, %s, %s, %s, %s) RETURNING user_id',
+                    (username, '', email, False, False))
                 user_id = cur.fetchone()[0]
                 db.commit()
                 
                 session['user_id'] = user_id
                 session['username'] = username
                 session['is_admin'] = False
+                session['is_editor'] = False
                 logger.info(f"New local account created for user: {username}")
                 
             cur.close()
@@ -99,7 +103,7 @@ def login():
             db = get_db()
             cur = db.cursor()
             cur.execute(
-                'SELECT user_id, username, password, is_admin FROM users WHERE username = %s',
+                'SELECT user_id, username, password, is_admin, is_editor FROM users WHERE username = %s',
                 (username, ))
             user = cur.fetchone()
             cur.close()
@@ -110,6 +114,7 @@ def login():
                 session['user_id'] = user[0]
                 session['username'] = user[1]
                 session['is_admin'] = user[3]
+                session['is_editor'] = user[4]
                 return redirect(url_for('home'))
             else:
                 logger.warning(f"Authentication failed for user: {username} - invalid credentials")
@@ -147,8 +152,8 @@ def register():
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
             cur.execute(
-                'INSERT INTO users (username, password, email, is_admin) VALUES (%s, %s, %s, %s)',
-                (username, hashed_password, email, False))
+                'INSERT INTO users (username, password, email, is_admin, is_editor) VALUES (%s, %s, %s, %s, %s)',
+                (username, hashed_password, email, False, False))
             db.commit()
             cur.close()
             flash('Registration successful', 'success')
@@ -218,14 +223,37 @@ def search():
 
 @app.route('/admin')
 def admin():
-    if 'user_id' not in session or not session.get('is_admin'):
+    if 'user_id' not in session:
         return redirect(url_for('login'))
+    
+    # TODO: Separate admin and editor homepages
+    # For now, both admins and editors use the same page but with different permissions
+    if not session.get('is_admin') and not session.get('is_editor'):
+        flash('Access denied. Admin or editor privileges required.', 'error')
+        return redirect(url_for('user'))
+    
     return render_template('admin.html')
+
+@app.route('/editor')
+def editor():
+    # TODO: Create separate editor homepage
+    # Temporarily redirecting editors to admin page with limited permissions
+    if 'user_id' not in session or not session.get('is_editor'):
+        return redirect(url_for('login'))
+    return redirect(url_for('admin'))
 
 @app.route('/user')
 def user():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    
+    # Check if user is admin or editor and redirect accordingly
+    if session.get('is_admin'):
+        return redirect(url_for('admin'))
+    elif session.get('is_editor'):
+        return redirect(url_for('admin'))  # TODO: Redirect to editor homepage when created
+    
+    # Regular user logic
     db = get_db()
     cur = db.cursor()
     cur.execute('SELECT * FROM users;')
@@ -235,6 +263,7 @@ def user():
 
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
+    # TODO: Restrict this route to admins only
     if 'user_id' not in session:
         return redirect(url_for('login'))
     if request.method == 'POST':
@@ -249,8 +278,8 @@ def add_user():
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
             cur.execute(
-                'INSERT INTO users (username, password, email) VALUES (%s, %s, %s)',
-                (username, hashed_password, email))
+                'INSERT INTO users (username, password, email, is_admin, is_editor) VALUES (%s, %s, %s, %s, %s)',
+                (username, hashed_password, email, False, False))
             db.commit()
             cur.close()
             flash('User added successfully', 'success')

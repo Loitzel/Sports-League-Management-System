@@ -9919,10 +9919,10 @@ COPY public.users (user_id, username, password, email, is_admin, is_editor) FROM
 1	kaimg	12345678	qayibovkamran@gmail.com	f	f
 2	geydruqbaku23	12345678	geydruqbaku23@gmail.com	f	f
 3	1	1234	gayibov21@itu.edu.tr	f	f
-4	admin	$2b$12$715sLtvK3Ubw3kIK4s3PBeYwYb/Bg.e4CNNkNlpN9cnjMjAVmOhsO	admin@example.com	t	f
+4	admin	$2b$12$aGJyPVcMZVACkh4H0LRj6er9Z1aIQ/WLLNnUcn5PSLVEZzbfolsLm	admin@example.com	t	f
 6	geniy	$2b$12$715sLtvK3Ubw3kIK4s3PBeYwYb/Bg.e4CNNkNpjMjAVmOhsO	geniy@gmail.com	f	f
 7	12	$2b$12$NATEwLpl1Dxvu8eaM8vUyuAVKLr8Wt2TRc8MVWiN7RNwRx86GbJjG	adrf@gmail.com	f	f
-8	editor1	$2b$12$715sLtvK3Ubw3kIK4s3PBeYwYb/Bg.e4CNNkNlpN9cnjMjAVmOhsO	editor1@example.com	f	t
+8	editor1	$2b$12$6kC0LfCLPICukByuYjJeZeh1ARo2OrhZpH3eL2USyzBKCqivUekPC	editor1@example.com	f	t
 \.
 
 --

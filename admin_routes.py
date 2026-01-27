@@ -662,8 +662,9 @@ def manage_users():
     if request.method == 'POST':
         try:
             user_id = request.form.get('user_id')
-            is_admin = request.form.get('is_admin') == 'true'
-            is_editor = request.form.get('is_editor') == 'true'
+            # Cambiar nombres de variables para evitar conflicto con las funciones
+            admin_status = request.form.get('is_admin') == 'true'
+            editor_status = request.form.get('is_editor') == 'true'
 
             # Solo admins pueden modificar privilegios
             if not session.get('is_admin'):
@@ -671,7 +672,7 @@ def manage_users():
                 return redirect(url_for('admin.manage_users'))
                 
             cur.execute('UPDATE users SET is_admin = %s, is_editor = %s WHERE user_id = %s', 
-                       (is_admin, is_editor, user_id))
+                       (admin_status, editor_status, user_id))
             db.commit()
             flash('User privilege updated successfully', 'success')
         except Exception as e:
