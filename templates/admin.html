@@ -48,7 +48,7 @@
                     {% endif %}
                 </a>
                 
-                <a href="{{ url_for('admin.manage_leagues') }}" class="list-group-item list-group-item-action">
+                <a href="{{ url_for('admin.manage_sports') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-trophy"></i> Manage Sports
                     {% if session.get('is_editor') %}
                     <span class="badge bg-warning text-dark float-end">Edit Only</span>
@@ -97,7 +97,7 @@
                     {% endif %}
                 </a>
                 
-                <a href="{{ url_for('admin.manage_countries') }}" class="list-group-item list-group-item-action">
+                <a href="{{ url_for('admin.manage_faculties') }}" class="list-group-item list-group-item-action">
                     <i class="fas fa-flag"></i> Manage Faculties
                     {% if session.get('is_editor') %}
                     <span class="badge bg-warning text-dark float-end">Edit Only</span>

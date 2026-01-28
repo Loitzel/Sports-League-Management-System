@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-6">
             <h2 id="form-title">Add Faculty</h2>
-            <form action="{{ url_for('admin.manage_countries') }}" method="POST" id="facultyForm">
+            <form action="{{ url_for('admin.manage_faculties') }}" method="POST" id="facultyForm">
                 <input type="hidden" id="country_id" name="country_id">
                 <div class="form-group">
                     <label for="name">Name:</label>
@@ -56,7 +56,7 @@
                         <td>
                             <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" 
                                     data-id="{{ country[0] }}" 
-                                    data-action="{{ url_for('admin.manage_countries') }}"
+                                    data-action="{{ url_for('admin.manage_faculties') }}"
                                     data-name="{{ country[1] }}">
                                 <i class="fa fa-minus"></i>
                             </button>

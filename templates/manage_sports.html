@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-6">
             <h2 id="form-title">Add Sport</h2>
-            <form action="{{ url_for('admin.manage_leagues') }}" method="POST" id="leagueForm">
+            <form action="{{ url_for('admin.manage_sports') }}" method="POST" id="leagueForm">
                 <input type="hidden" id="league_id" name="league_id">
                 <div class="form-group">
                     <label for="name">Name:</label>
@@ -48,7 +48,7 @@
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ league[0] }}" data-action="{{ url_for('admin.manage_leagues') }}">
+                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ league[0] }}" data-action="{{ url_for('admin.manage_sports') }}">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </td>
