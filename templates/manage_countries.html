@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
-{% block title %}Manage Countries - Admin Panel{% endblock %}
+{% block title %}Manage Faculties - Admin Panel{% endblock %}
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Manage Countries</h1>
+    <h1 class="mb-4">Manage Faculties</h1>
     <div class="row">
         <div class="col-md-6">
-            <h2 id="form-title">Add Country</h2>
+            <h2 id="form-title">Add Faculty</h2>
             <form action="{{ url_for('admin.manage_countries') }}" method="POST">
                 <input type="hidden" id="country_id" name="country_id">
                 <div class="form-group">
@@ -16,11 +16,11 @@
                     <label for="flag_url">Flag URL:</label>
                     <input type="text" class="form-control" id="flag_url" name="flag_url">
                 </div>
-                <button type="submit" name="submit" class="btn btn-primary" id="submit-button">Add Country</button>
+                <button type="submit" name="submit" class="btn btn-primary" id="submit-button">Add Faculty</button>
             </form>
         </div>
         <div class="col-md-6">
-            <h2>Existing Countries</h2>
+            <h2>Existing Faculties</h2>
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -84,8 +84,8 @@
         document.getElementById('country_id').value = id;
         document.getElementById('name').value = name;
         document.getElementById('flag_url').value = flag_url;
-        document.getElementById('submit-button').innerText = 'Update Country';
-        document.getElementById('form-title').innerText = 'Edit Country';
+        document.getElementById('submit-button').innerText = 'Update Faculty';
+        document.getElementById('form-title').innerText = 'Edit Faculty';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {
