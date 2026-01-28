@@ -380,8 +380,6 @@ ALTER SEQUENCE public.standings_standing_id_seq OWNED BY public.standings.standi
 CREATE TABLE public.teams (
     team_id integer NOT NULL,
     name character varying(255) NOT NULL,
-    founded_year integer,
-    stadium_id integer,
     sport_id integer,
     coach_id integer,
     cresturl character varying(255),
@@ -6693,7 +6691,6 @@ INSERT INTO public.players VALUES (37968, 267, 'Ibrahima Koné', 'Offence', '199
 INSERT INTO public.players VALUES (136349, 267, 'Largie Ramazani', 'Offence', '2001-02-27');
 INSERT INTO public.players VALUES (172231, 267, 'Marko Milovanovic', 'Offence', '2003-08-04');
 INSERT INTO public.players VALUES (230356, 267, 'Rachad Fettal', 'Offence', '2005-01-16');
-INSERT INTO public.players VALUES (32016, 275, 'Aarón', 'Goalkeeper', '1995-09-27');
 INSERT INTO public.players VALUES (100130, 275, 'Álvaro Vallés Rosa', 'Goalkeeper', '1997-07-25');
 INSERT INTO public.players VALUES (203599, 275, 'Álex González', 'Goalkeeper', '2002-08-08');
 INSERT INTO public.players VALUES (247055, 275, 'Álvaro Killane', 'Goalkeeper', '2004-12-14');
@@ -7402,6 +7399,7 @@ INSERT INTO public.players VALUES (252873, 576, 'Tidiane Diallo', 'Offence', '20
 INSERT INTO public.players VALUES (280, 548, 'Guillermo Maripán', 'Defence', '1994-05-06');
 INSERT INTO public.players VALUES (8913, 546, 'Deiver Machado', 'Defence', '1993-09-02');
 INSERT INTO public.players VALUES (182199, 521, 'Joffrey Bazie', 'Offence', '2003-10-27');
+INSERT INTO public.players VALUES (32016, 8, 'Aarón', 'Goalkeeper', '1995-09-27');
 
 
 --
@@ -9634,102 +9632,103 @@ INSERT INTO public.standings VALUES (98, 5, 18, 541, 34, 5, 10, 19, 25, 26, 60, 
 -- Data for Name: teams; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.teams VALUES (78, 'Club Atlético de Madrid', 1903, 62, 3, 62, 'https://crests.football-data.org/78.svg', NULL);
-INSERT INTO public.teams VALUES (79, 'CA Osasuna', 1920, 63, 3, 63, 'https://crests.football-data.org/79.svg', NULL);
-INSERT INTO public.teams VALUES (81, 'FC Barcelona', 1899, 64, 3, 64, 'https://crests.football-data.org/81.svg', NULL);
-INSERT INTO public.teams VALUES (82, 'Getafe CF', 1946, 65, 3, 65, 'https://crests.football-data.org/82.png', NULL);
-INSERT INTO public.teams VALUES (83, 'Granada CF', 1931, 66, 3, 66, 'https://crests.football-data.org/83.svg', NULL);
-INSERT INTO public.teams VALUES (86, 'Real Madrid CF', 1902, 67, 3, 67, 'https://crests.football-data.org/86.png', NULL);
-INSERT INTO public.teams VALUES (87, 'Rayo Vallecano de Madrid', 1924, 68, 3, 68, 'https://crests.football-data.org/87.svg', NULL);
-INSERT INTO public.teams VALUES (89, 'RCD Mallorca', 1916, 69, 3, 69, 'https://crests.football-data.org/89.png', NULL);
-INSERT INTO public.teams VALUES (90, 'Real Betis Balompié', 1907, 70, 3, 70, 'https://crests.football-data.org/90.png', NULL);
-INSERT INTO public.teams VALUES (92, 'Real Sociedad de Fútbol', 1903, 71, 3, 71, 'https://crests.football-data.org/92.svg', NULL);
-INSERT INTO public.teams VALUES (94, 'Villarreal CF', 1923, 72, 3, 72, 'https://crests.football-data.org/94.png', NULL);
-INSERT INTO public.teams VALUES (95, 'Valencia CF', 1919, 73, 3, 73, 'https://crests.football-data.org/95.svg', NULL);
-INSERT INTO public.teams VALUES (263, 'Deportivo Alavés', 1921, 74, 3, 74, 'https://crests.football-data.org/263.png', NULL);
-INSERT INTO public.teams VALUES (264, 'Cádiz CF', 1910, 75, 3, 75, 'https://crests.football-data.org/264.png', NULL);
-INSERT INTO public.teams VALUES (267, 'UD Almería', 1989, 76, 3, 76, 'https://crests.football-data.org/267.png', NULL);
-INSERT INTO public.teams VALUES (1, '1. FC Köln', 1948, 101, 4, 101, 'https://crests.football-data.org/1.png', NULL);
-INSERT INTO public.teams VALUES (2, 'TSG 1899 Hoffenheim', 1921, 102, 4, 102, 'https://crests.football-data.org/2.png', NULL);
-INSERT INTO public.teams VALUES (3, 'Bayer 04 Leverkusen', 1904, 103, 4, 103, 'https://crests.football-data.org/3.png', NULL);
-INSERT INTO public.teams VALUES (4, 'Borussia Dortmund', 1909, 104, 4, 104, 'https://crests.football-data.org/4.png', NULL);
-INSERT INTO public.teams VALUES (5, 'FC Bayern München', 1900, 105, 4, 105, 'https://crests.football-data.org/5.svg', NULL);
-INSERT INTO public.teams VALUES (10, 'VfB Stuttgart', 1893, 106, 4, 106, 'https://crests.football-data.org/10.png', NULL);
-INSERT INTO public.teams VALUES (11, 'VfL Wolfsburg', 1945, 107, 4, 107, 'https://crests.football-data.org/11.svg', NULL);
-INSERT INTO public.teams VALUES (12, 'SV Werder Bremen', 1899, 108, 4, 108, 'https://crests.football-data.org/12.svg', NULL);
-INSERT INTO public.teams VALUES (15, '1. FSV Mainz 05', 1905, 109, 4, 109, 'https://crests.football-data.org/15.png', NULL);
-INSERT INTO public.teams VALUES (16, 'FC Augsburg', 1907, 110, 4, 110, 'https://crests.football-data.org/16.png', NULL);
-INSERT INTO public.teams VALUES (17, 'SC Freiburg', 1912, 111, 4, 111, 'https://crests.football-data.org/17.svg', NULL);
-INSERT INTO public.teams VALUES (18, 'Borussia Mönchengladbach', 1900, 112, 4, 112, 'https://crests.football-data.org/18.png', NULL);
-INSERT INTO public.teams VALUES (19, 'Eintracht Frankfurt', 1899, 113, 4, 113, 'https://crests.football-data.org/19.svg', NULL);
-INSERT INTO public.teams VALUES (28, '1. FC Union Berlin', 1906, 114, 4, 114, 'https://crests.football-data.org/28.svg', NULL);
-INSERT INTO public.teams VALUES (36, 'VfL Bochum 1848', 1849, 115, 4, 115, 'https://crests.football-data.org/36.png', NULL);
-INSERT INTO public.teams VALUES (44, '1. FC Heidenheim 1846', 1846, 116, 4, 116, 'https://crests.football-data.org/44.svg', NULL);
-INSERT INTO public.teams VALUES (55, 'SV Darmstadt 98', 1898, 117, 4, 117, 'https://crests.football-data.org/55.png', NULL);
-INSERT INTO public.teams VALUES (721, 'RB Leipzig', 2009, 118, 4, 118, 'https://crests.football-data.org/721.png', NULL);
-INSERT INTO public.teams VALUES (98, 'AC Milan', 1899, 41, 2, 41, 'https://crests.football-data.org/98.png', NULL);
-INSERT INTO public.teams VALUES (99, 'ACF Fiorentina', 1926, 42, 2, 42, 'https://crests.football-data.org/99.png', NULL);
-INSERT INTO public.teams VALUES (100, 'AS Roma', 1927, 43, 2, 43, 'https://crests.football-data.org/100.png', NULL);
-INSERT INTO public.teams VALUES (102, 'Atalanta BC', 1904, 44, 2, 44, 'https://crests.football-data.org/102.png', NULL);
-INSERT INTO public.teams VALUES (103, 'Bologna FC 1909', 1909, 45, 2, 45, 'https://crests.football-data.org/103.png', NULL);
-INSERT INTO public.teams VALUES (104, 'Cagliari Calcio', 1920, 46, 2, 46, 'https://crests.football-data.org/104.png', NULL);
-INSERT INTO public.teams VALUES (107, 'Genoa CFC', 1893, 47, 2, 47, 'https://crests.football-data.org/107.png', NULL);
-INSERT INTO public.teams VALUES (108, 'FC Internazionale Milano', 1908, 41, 2, 48, 'https://crests.football-data.org/108.png', NULL);
-INSERT INTO public.teams VALUES (109, 'Juventus FC', 1897, 48, 2, 49, 'https://crests.football-data.org/109.png', NULL);
-INSERT INTO public.teams VALUES (110, 'SS Lazio', 1900, 43, 2, 50, 'https://crests.football-data.org/110.png', NULL);
-INSERT INTO public.teams VALUES (113, 'SSC Napoli', 1904, 49, 2, 51, 'https://crests.football-data.org/113.png', NULL);
-INSERT INTO public.teams VALUES (115, 'Udinese Calcio', 1896, 50, 2, 52, 'https://crests.football-data.org/115.png', NULL);
-INSERT INTO public.teams VALUES (445, 'Empoli FC', 1920, 51, 2, 53, 'https://crests.football-data.org/445.png', NULL);
-INSERT INTO public.teams VALUES (57, 'Arsenal', 1886, 21, 1, 21, 'https://crests.football-data.org/57.png', NULL);
-INSERT INTO public.teams VALUES (58, 'Aston Villa', 1872, 22, 1, 22, 'https://crests.football-data.org/58.png', NULL);
-INSERT INTO public.teams VALUES (61, 'Chelsea', 1905, 23, 1, 23, 'https://crests.football-data.org/61.png', NULL);
-INSERT INTO public.teams VALUES (62, 'Everton', 1878, 24, 1, 24, 'https://crests.football-data.org/62.png', NULL);
-INSERT INTO public.teams VALUES (63, 'Fulham', 1879, 25, 1, 25, 'https://crests.football-data.org/63.svg', NULL);
-INSERT INTO public.teams VALUES (64, 'Liverpool', 1892, 26, 1, 26, 'https://crests.football-data.org/64.png', NULL);
-INSERT INTO public.teams VALUES (65, 'Manchester City', 1880, 27, 1, 27, 'https://crests.football-data.org/65.png', NULL);
-INSERT INTO public.teams VALUES (66, 'Manchester United', 1878, 28, 1, 28, 'https://crests.football-data.org/66.png', NULL);
-INSERT INTO public.teams VALUES (67, 'Newcastle United', 1881, 29, 1, 29, 'https://crests.football-data.org/67.png', NULL);
-INSERT INTO public.teams VALUES (73, 'Tottenham Hotspur', 1882, 30, 1, 30, 'https://crests.football-data.org/73.png', NULL);
-INSERT INTO public.teams VALUES (76, 'Wolverhampton Wanderers', 1877, 31, 1, 31, 'https://crests.football-data.org/76.svg', NULL);
-INSERT INTO public.teams VALUES (328, 'Burnley', 1881, 32, 1, 32, 'https://crests.football-data.org/328.png', NULL);
-INSERT INTO public.teams VALUES (351, 'Nottingham Forest', 1865, 33, 1, 33, 'https://crests.football-data.org/351.png', NULL);
-INSERT INTO public.teams VALUES (354, 'Crystal Palace', 1905, 34, 1, 34, 'https://crests.football-data.org/354.png', NULL);
-INSERT INTO public.teams VALUES (356, 'Sheffield United', NULL, 35, 1, 35, 'https://crests.football-data.org/356.svg', NULL);
-INSERT INTO public.teams VALUES (389, 'Luton Town', 1885, 36, 1, 36, 'https://crests.football-data.org/389.png', NULL);
-INSERT INTO public.teams VALUES (397, 'Brighton & Hove Albion', 1898, 37, 1, 37, 'https://crests.football-data.org/397.svg', NULL);
-INSERT INTO public.teams VALUES (402, 'Brentford', 1889, 38, 1, 38, 'https://crests.football-data.org/402.png', NULL);
-INSERT INTO public.teams VALUES (563, 'West Ham United', 1895, 39, 1, 39, 'https://crests.football-data.org/563.png', NULL);
-INSERT INTO public.teams VALUES (1044, 'AFC Bournemouth', 1890, 40, 1, 40, 'https://crests.football-data.org/1044.png', NULL);
-INSERT INTO public.teams VALUES (450, 'Hellas Verona FC', 1903, 52, 2, 54, 'https://crests.football-data.org/450.png', NULL);
-INSERT INTO public.teams VALUES (455, 'US Salernitana 1919', 1919, 53, 2, 55, 'https://crests.football-data.org/455.png', NULL);
-INSERT INTO public.teams VALUES (470, 'Frosinone Calcio', 1912, 54, 2, 56, 'https://crests.football-data.org/470.png', NULL);
-INSERT INTO public.teams VALUES (471, 'US Sassuolo Calcio', 1920, 55, 2, 57, 'https://crests.football-data.org/471.png', NULL);
-INSERT INTO public.teams VALUES (586, 'Torino FC', 1894, 56, 2, 58, 'https://crests.football-data.org/586.png', NULL);
-INSERT INTO public.teams VALUES (5890, 'US Lecce', 1908, 57, 2, 59, 'https://crests.football-data.org/5890.png', NULL);
-INSERT INTO public.teams VALUES (5911, 'AC Monza', 1912, 58, 2, 60, 'https://crests.football-data.org/5911.png', NULL);
-INSERT INTO public.teams VALUES (275, 'UD Las Palmas', 1949, 77, 3, 77, 'https://crests.football-data.org/275.png', NULL);
-INSERT INTO public.teams VALUES (298, 'Girona FC', 1930, 78, 3, 78, 'https://crests.football-data.org/298.png', NULL);
-INSERT INTO public.teams VALUES (558, 'RC Celta de Vigo', 1923, 79, 3, 79, 'https://crests.football-data.org/558.svg', NULL);
-INSERT INTO public.teams VALUES (559, 'Sevilla FC', 1905, 80, 3, 80, 'https://crests.football-data.org/559.svg', NULL);
-INSERT INTO public.teams VALUES (511, 'Toulouse FC', 1937, 81, 5, 81, 'https://crests.football-data.org/511.png', NULL);
-INSERT INTO public.teams VALUES (512, 'Stade Brestois 29', 1903, 82, 5, 82, 'https://crests.football-data.org/512.png', NULL);
-INSERT INTO public.teams VALUES (516, 'Olympique de Marseille', 1898, 83, 5, 83, 'https://crests.football-data.org/516.png', NULL);
-INSERT INTO public.teams VALUES (518, 'Montpellier HSC', 1970, 84, 5, 84, 'https://crests.football-data.org/518.png', NULL);
-INSERT INTO public.teams VALUES (521, 'Lille OSC', 1944, 85, 5, 85, 'https://crests.football-data.org/521.svg', NULL);
-INSERT INTO public.teams VALUES (522, 'OGC Nice', 1904, 86, 5, 86, 'https://crests.football-data.org/522.png', NULL);
-INSERT INTO public.teams VALUES (523, 'Olympique Lyonnais', 1896, 87, 5, 87, 'https://crests.football-data.org/523.svg', NULL);
-INSERT INTO public.teams VALUES (524, 'Paris Saint-Germain FC', 1904, 88, 5, 88, 'https://crests.football-data.org/524.png', NULL);
-INSERT INTO public.teams VALUES (525, 'FC Lorient', 1926, 89, 5, 89, 'https://crests.football-data.org/525.png', NULL);
-INSERT INTO public.teams VALUES (529, 'Stade Rennais FC 1901', 1901, 90, 5, 90, 'https://crests.football-data.org/529.png', NULL);
-INSERT INTO public.teams VALUES (533, 'Le Havre AC', 1872, 91, 5, 91, 'https://crests.football-data.org/533.png', NULL);
-INSERT INTO public.teams VALUES (541, 'Clermont Foot 63', 1911, 92, 5, 92, 'https://crests.football-data.org/541.svg', NULL);
-INSERT INTO public.teams VALUES (543, 'FC Nantes', 1943, 93, 5, 93, 'https://crests.football-data.org/543.png', NULL);
-INSERT INTO public.teams VALUES (545, 'FC Metz', 1919, 94, 5, 94, 'https://crests.football-data.org/545.svg', NULL);
-INSERT INTO public.teams VALUES (546, 'Racing Club de Lens', 1906, 95, 5, 95, 'https://crests.football-data.org/546.png', NULL);
-INSERT INTO public.teams VALUES (547, 'Stade de Reims', 1909, 96, 5, 96, 'https://crests.football-data.org/547.png', NULL);
-INSERT INTO public.teams VALUES (548, 'AS Monaco FC', 1919, 97, 5, 97, 'https://crests.football-data.org/548.png', NULL);
-INSERT INTO public.teams VALUES (576, 'RC Strasbourg Alsace', 1906, 98, 5, 98, 'https://crests.football-data.org/576.png', NULL);
-INSERT INTO public.teams VALUES (77, 'Athletic Club', 1898, 21, 5, 107, 'https://crests.football-data.org/77.png', NULL);
+INSERT INTO public.teams VALUES (78, 'Club Atlético de Madrid', 3, 62, 'https://crests.football-data.org/78.svg', NULL);
+INSERT INTO public.teams VALUES (79, 'CA Osasuna', 3, 63, 'https://crests.football-data.org/79.svg', NULL);
+INSERT INTO public.teams VALUES (81, 'FC Barcelona', 3, 64, 'https://crests.football-data.org/81.svg', NULL);
+INSERT INTO public.teams VALUES (82, 'Getafe CF', 3, 65, 'https://crests.football-data.org/82.png', NULL);
+INSERT INTO public.teams VALUES (83, 'Granada CF', 3, 66, 'https://crests.football-data.org/83.svg', NULL);
+INSERT INTO public.teams VALUES (86, 'Real Madrid CF', 3, 67, 'https://crests.football-data.org/86.png', NULL);
+INSERT INTO public.teams VALUES (87, 'Rayo Vallecano de Madrid', 3, 68, 'https://crests.football-data.org/87.svg', NULL);
+INSERT INTO public.teams VALUES (89, 'RCD Mallorca', 3, 69, 'https://crests.football-data.org/89.png', NULL);
+INSERT INTO public.teams VALUES (90, 'Real Betis Balompié', 3, 70, 'https://crests.football-data.org/90.png', NULL);
+INSERT INTO public.teams VALUES (92, 'Real Sociedad de Fútbol', 3, 71, 'https://crests.football-data.org/92.svg', NULL);
+INSERT INTO public.teams VALUES (94, 'Villarreal CF', 3, 72, 'https://crests.football-data.org/94.png', NULL);
+INSERT INTO public.teams VALUES (95, 'Valencia CF', 3, 73, 'https://crests.football-data.org/95.svg', NULL);
+INSERT INTO public.teams VALUES (263, 'Deportivo Alavés', 3, 74, 'https://crests.football-data.org/263.png', NULL);
+INSERT INTO public.teams VALUES (264, 'Cádiz CF', 3, 75, 'https://crests.football-data.org/264.png', NULL);
+INSERT INTO public.teams VALUES (267, 'UD Almería', 3, 76, 'https://crests.football-data.org/267.png', NULL);
+INSERT INTO public.teams VALUES (1, '1. FC Köln', 4, 101, 'https://crests.football-data.org/1.png', NULL);
+INSERT INTO public.teams VALUES (2, 'TSG 1899 Hoffenheim', 4, 102, 'https://crests.football-data.org/2.png', NULL);
+INSERT INTO public.teams VALUES (3, 'Bayer 04 Leverkusen', 4, 103, 'https://crests.football-data.org/3.png', NULL);
+INSERT INTO public.teams VALUES (4, 'Borussia Dortmund', 4, 104, 'https://crests.football-data.org/4.png', NULL);
+INSERT INTO public.teams VALUES (5, 'FC Bayern München', 4, 105, 'https://crests.football-data.org/5.svg', NULL);
+INSERT INTO public.teams VALUES (10, 'VfB Stuttgart', 4, 106, 'https://crests.football-data.org/10.png', NULL);
+INSERT INTO public.teams VALUES (11, 'VfL Wolfsburg', 4, 107, 'https://crests.football-data.org/11.svg', NULL);
+INSERT INTO public.teams VALUES (12, 'SV Werder Bremen', 4, 108, 'https://crests.football-data.org/12.svg', NULL);
+INSERT INTO public.teams VALUES (15, '1. FSV Mainz 05', 4, 109, 'https://crests.football-data.org/15.png', NULL);
+INSERT INTO public.teams VALUES (16, 'FC Augsburg', 4, 110, 'https://crests.football-data.org/16.png', NULL);
+INSERT INTO public.teams VALUES (17, 'SC Freiburg', 4, 111, 'https://crests.football-data.org/17.svg', NULL);
+INSERT INTO public.teams VALUES (18, 'Borussia Mönchengladbach', 4, 112, 'https://crests.football-data.org/18.png', NULL);
+INSERT INTO public.teams VALUES (19, 'Eintracht Frankfurt', 4, 113, 'https://crests.football-data.org/19.svg', NULL);
+INSERT INTO public.teams VALUES (28, '1. FC Union Berlin', 4, 114, 'https://crests.football-data.org/28.svg', NULL);
+INSERT INTO public.teams VALUES (36, 'VfL Bochum 1848', 4, 115, 'https://crests.football-data.org/36.png', NULL);
+INSERT INTO public.teams VALUES (44, '1. FC Heidenheim 1846', 4, 116, 'https://crests.football-data.org/44.svg', NULL);
+INSERT INTO public.teams VALUES (55, 'SV Darmstadt 98', 4, 117, 'https://crests.football-data.org/55.png', NULL);
+INSERT INTO public.teams VALUES (721, 'RB Leipzig', 4, 118, 'https://crests.football-data.org/721.png', NULL);
+INSERT INTO public.teams VALUES (98, 'AC Milan', 2, 41, 'https://crests.football-data.org/98.png', NULL);
+INSERT INTO public.teams VALUES (99, 'ACF Fiorentina', 2, 42, 'https://crests.football-data.org/99.png', NULL);
+INSERT INTO public.teams VALUES (100, 'AS Roma', 2, 43, 'https://crests.football-data.org/100.png', NULL);
+INSERT INTO public.teams VALUES (102, 'Atalanta BC', 2, 44, 'https://crests.football-data.org/102.png', NULL);
+INSERT INTO public.teams VALUES (103, 'Bologna FC 1909', 2, 45, 'https://crests.football-data.org/103.png', NULL);
+INSERT INTO public.teams VALUES (104, 'Cagliari Calcio', 2, 46, 'https://crests.football-data.org/104.png', NULL);
+INSERT INTO public.teams VALUES (107, 'Genoa CFC', 2, 47, 'https://crests.football-data.org/107.png', NULL);
+INSERT INTO public.teams VALUES (108, 'FC Internazionale Milano', 2, 48, 'https://crests.football-data.org/108.png', NULL);
+INSERT INTO public.teams VALUES (109, 'Juventus FC', 2, 49, 'https://crests.football-data.org/109.png', NULL);
+INSERT INTO public.teams VALUES (110, 'SS Lazio', 2, 50, 'https://crests.football-data.org/110.png', NULL);
+INSERT INTO public.teams VALUES (113, 'SSC Napoli', 2, 51, 'https://crests.football-data.org/113.png', NULL);
+INSERT INTO public.teams VALUES (115, 'Udinese Calcio', 2, 52, 'https://crests.football-data.org/115.png', NULL);
+INSERT INTO public.teams VALUES (445, 'Empoli FC', 2, 53, 'https://crests.football-data.org/445.png', NULL);
+INSERT INTO public.teams VALUES (57, 'Arsenal', 1, 21, 'https://crests.football-data.org/57.png', NULL);
+INSERT INTO public.teams VALUES (58, 'Aston Villa', 1, 22, 'https://crests.football-data.org/58.png', NULL);
+INSERT INTO public.teams VALUES (61, 'Chelsea', 1, 23, 'https://crests.football-data.org/61.png', NULL);
+INSERT INTO public.teams VALUES (62, 'Everton', 1, 24, 'https://crests.football-data.org/62.png', NULL);
+INSERT INTO public.teams VALUES (63, 'Fulham', 1, 25, 'https://crests.football-data.org/63.svg', NULL);
+INSERT INTO public.teams VALUES (64, 'Liverpool', 1, 26, 'https://crests.football-data.org/64.png', NULL);
+INSERT INTO public.teams VALUES (65, 'Manchester City', 1, 27, 'https://crests.football-data.org/65.png', NULL);
+INSERT INTO public.teams VALUES (66, 'Manchester United', 1, 28, 'https://crests.football-data.org/66.png', NULL);
+INSERT INTO public.teams VALUES (67, 'Newcastle United', 1, 29, 'https://crests.football-data.org/67.png', NULL);
+INSERT INTO public.teams VALUES (73, 'Tottenham Hotspur', 1, 30, 'https://crests.football-data.org/73.png', NULL);
+INSERT INTO public.teams VALUES (76, 'Wolverhampton Wanderers', 1, 31, 'https://crests.football-data.org/76.svg', NULL);
+INSERT INTO public.teams VALUES (328, 'Burnley', 1, 32, 'https://crests.football-data.org/328.png', NULL);
+INSERT INTO public.teams VALUES (351, 'Nottingham Forest', 1, 33, 'https://crests.football-data.org/351.png', NULL);
+INSERT INTO public.teams VALUES (354, 'Crystal Palace', 1, 34, 'https://crests.football-data.org/354.png', NULL);
+INSERT INTO public.teams VALUES (356, 'Sheffield United', 1, 35, 'https://crests.football-data.org/356.svg', NULL);
+INSERT INTO public.teams VALUES (389, 'Luton Town', 1, 36, 'https://crests.football-data.org/389.png', NULL);
+INSERT INTO public.teams VALUES (397, 'Brighton & Hove Albion', 1, 37, 'https://crests.football-data.org/397.svg', NULL);
+INSERT INTO public.teams VALUES (402, 'Brentford', 1, 38, 'https://crests.football-data.org/402.png', NULL);
+INSERT INTO public.teams VALUES (563, 'West Ham United', 1, 39, 'https://crests.football-data.org/563.png', NULL);
+INSERT INTO public.teams VALUES (1044, 'AFC Bournemouth', 1, 40, 'https://crests.football-data.org/1044.png', NULL);
+INSERT INTO public.teams VALUES (450, 'Hellas Verona FC', 2, 54, 'https://crests.football-data.org/450.png', NULL);
+INSERT INTO public.teams VALUES (455, 'US Salernitana 1919', 2, 55, 'https://crests.football-data.org/455.png', NULL);
+INSERT INTO public.teams VALUES (470, 'Frosinone Calcio', 2, 56, 'https://crests.football-data.org/470.png', NULL);
+INSERT INTO public.teams VALUES (471, 'US Sassuolo Calcio', 2, 57, 'https://crests.football-data.org/471.png', NULL);
+INSERT INTO public.teams VALUES (586, 'Torino FC', 2, 58, 'https://crests.football-data.org/586.png', NULL);
+INSERT INTO public.teams VALUES (5890, 'US Lecce', 2, 59, 'https://crests.football-data.org/5890.png', NULL);
+INSERT INTO public.teams VALUES (5911, 'AC Monza', 2, 60, 'https://crests.football-data.org/5911.png', NULL);
+INSERT INTO public.teams VALUES (275, 'UD Las Palmas', 3, 77, 'https://crests.football-data.org/275.png', NULL);
+INSERT INTO public.teams VALUES (298, 'Girona FC', 3, 78, 'https://crests.football-data.org/298.png', NULL);
+INSERT INTO public.teams VALUES (558, 'RC Celta de Vigo', 3, 79, 'https://crests.football-data.org/558.svg', NULL);
+INSERT INTO public.teams VALUES (559, 'Sevilla FC', 3, 80, 'https://crests.football-data.org/559.svg', NULL);
+INSERT INTO public.teams VALUES (511, 'Toulouse FC', 5, 81, 'https://crests.football-data.org/511.png', NULL);
+INSERT INTO public.teams VALUES (512, 'Stade Brestois 29', 5, 82, 'https://crests.football-data.org/512.png', NULL);
+INSERT INTO public.teams VALUES (516, 'Olympique de Marseille', 5, 83, 'https://crests.football-data.org/516.png', NULL);
+INSERT INTO public.teams VALUES (518, 'Montpellier HSC', 5, 84, 'https://crests.football-data.org/518.png', NULL);
+INSERT INTO public.teams VALUES (521, 'Lille OSC', 5, 85, 'https://crests.football-data.org/521.svg', NULL);
+INSERT INTO public.teams VALUES (522, 'OGC Nice', 5, 86, 'https://crests.football-data.org/522.png', NULL);
+INSERT INTO public.teams VALUES (523, 'Olympique Lyonnais', 5, 87, 'https://crests.football-data.org/523.svg', NULL);
+INSERT INTO public.teams VALUES (524, 'Paris Saint-Germain FC', 5, 88, 'https://crests.football-data.org/524.png', NULL);
+INSERT INTO public.teams VALUES (525, 'FC Lorient', 5, 89, 'https://crests.football-data.org/525.png', NULL);
+INSERT INTO public.teams VALUES (529, 'Stade Rennais FC 1901', 5, 90, 'https://crests.football-data.org/529.png', NULL);
+INSERT INTO public.teams VALUES (533, 'Le Havre AC', 5, 91, 'https://crests.football-data.org/533.png', NULL);
+INSERT INTO public.teams VALUES (541, 'Clermont Foot 63', 5, 92, 'https://crests.football-data.org/541.svg', NULL);
+INSERT INTO public.teams VALUES (543, 'FC Nantes', 5, 93, 'https://crests.football-data.org/543.png', NULL);
+INSERT INTO public.teams VALUES (545, 'FC Metz', 5, 94, 'https://crests.football-data.org/545.svg', NULL);
+INSERT INTO public.teams VALUES (546, 'Racing Club de Lens', 5, 95, 'https://crests.football-data.org/546.png', NULL);
+INSERT INTO public.teams VALUES (547, 'Stade de Reims', 5, 96, 'https://crests.football-data.org/547.png', NULL);
+INSERT INTO public.teams VALUES (548, 'AS Monaco FC', 5, 97, 'https://crests.football-data.org/548.png', NULL);
+INSERT INTO public.teams VALUES (576, 'RC Strasbourg Alsace', 5, 98, 'https://crests.football-data.org/576.png', NULL);
+INSERT INTO public.teams VALUES (77, 'Athletic Club', 5, 107, 'https://crests.football-data.org/77.png', NULL);
+INSERT INTO public.teams VALUES (8, 'Test', 3, 107, NULL, 15);
 
 
 --
@@ -9820,7 +9819,7 @@ SELECT pg_catalog.setval('public.standings_standing_id_seq', 20, true);
 -- Name: teams_team_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.teams_team_id_seq', 7, true);
+SELECT pg_catalog.setval('public.teams_team_id_seq', 8, true);
 
 
 --
@@ -10127,14 +10126,6 @@ ALTER TABLE ONLY public.teams
 
 ALTER TABLE ONLY public.teams
     ADD CONSTRAINT teams_league_id_fkey FOREIGN KEY (sport_id) REFERENCES public.sports(sport_id);
-
-
---
--- Name: teams teams_stadium_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.teams
-    ADD CONSTRAINT teams_stadium_id_fkey FOREIGN KEY (stadium_id) REFERENCES public.stadiums(stadium_id);
 
 
 --
