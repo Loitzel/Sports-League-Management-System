@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-6">
             <h2 id="form-title">Add Coach</h2>
-            <form action="{{ url_for('admin.manage_coaches') }}" method="POST">
+            <form action="{{ url_for('admin.manage_coaches') }}" method="POST" id="coachForm">
                 <input type="hidden" id="coach_id" name="coach_id">
                 <div class="form-group">
                     <label for="name">Name:</label>
@@ -24,7 +24,12 @@
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" name="submit" class="btn btn-primary" id="submit-button">Add Coach</button>
+                <!-- Botón para agregar (visible por defecto) -->
+                <button type="submit" name="add" class="btn btn-primary" id="add-button">Add Coach</button>
+                <!-- Botón para actualizar (oculto por defecto) -->
+                <button type="submit" name="submit" class="btn btn-primary" id="submit-button" style="display: none;">Update Coach</button>
+                <!-- Botón para cancelar (oculto por defecto) -->
+                <button type="button" class="btn btn-secondary" id="cancel-button" style="display: none;" onclick="resetForm()">Cancel</button>
             </form>
         </div>
         <div class="col-md-6">
@@ -46,7 +51,7 @@
                         <td>{{ coach[0] }}</td>
                         <td>{{ coach[1] }}</td>
                         <td>{{ coach[3] }}</td>
-                        <td>{{ coach[2] }}</td>
+                        <td>{{ coach[4] }}</td>  <!-- Cambiado de coach[2] a coach[4] para team_name -->
                         <td>
                             <button class="btn btn-success btn-sm" onclick="editCoach('{{ coach[0] }}', '{{ coach[1] }}', '{{ coach[2] }}', '{{ coach[3] }}')">
                                 <i class="fa fa-pencil-alt"></i>
@@ -77,7 +82,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this item?
+                    Are you sure you want to delete this coach?
                     <input type="hidden" id="deleteEntityId" name="deleteEntityId">
                 </div>
                 <div class="modal-footer">
@@ -91,12 +96,33 @@
 
 <script>
     function editCoach(id, name, team_id, nationality) {
+        // Rellenar el formulario con los datos existentes
         document.getElementById('coach_id').value = id;
         document.getElementById('name').value = name;
         document.getElementById('nationality').value = nationality;
         document.getElementById('team_id').value = team_id;
-        document.getElementById('submit-button').innerText = 'Update Coach';
+        
+        // Cambiar el título del formulario
         document.getElementById('form-title').innerText = 'Edit Coach';
+        
+        // Mostrar botón de actualizar y ocultar botón de agregar
+        document.getElementById('add-button').style.display = 'none';
+        document.getElementById('submit-button').style.display = 'inline-block';
+        document.getElementById('cancel-button').style.display = 'inline-block';
+    }
+    
+    function resetForm() {
+        // Limpiar el formulario
+        document.getElementById('coachForm').reset();
+        document.getElementById('coach_id').value = '';
+        
+        // Restaurar el título del formulario
+        document.getElementById('form-title').innerText = 'Add Coach';
+        
+        // Mostrar botón de agregar y ocultar botones de actualizar/cancelar
+        document.getElementById('add-button').style.display = 'inline-block';
+        document.getElementById('submit-button').style.display = 'none';
+        document.getElementById('cancel-button').style.display = 'none';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {

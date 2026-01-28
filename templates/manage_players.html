@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-6">
             <h2 id="form-title">Add Player</h2>
-            <form action="{{ url_for('admin.manage_players') }}" method="POST">
+            <form action="{{ url_for('admin.manage_players') }}" method="POST" id="playerForm">
                 <input type="hidden" id="player_id" name="player_id">
                 <div class="form-group">
                     <label for="team_id">Team:</label>
@@ -32,7 +32,12 @@
                     <label for="nationality">Nationality:</label>
                     <input type="text" class="form-control" id="nationality" name="nationality" required>
                 </div>
-                <button type="submit" name="submit" class="btn btn-primary" id="submit-button">Add Player</button>
+                <!-- Botón para agregar (visible por defecto) -->
+                <button type="submit" name="submit" class="btn btn-primary" id="add-button">Add Player</button>
+                <!-- Botón para actualizar (oculto por defecto) -->
+                <button type="submit" name="submit" class="btn btn-primary" id="update-button" style="display: none;">Update Player</button>
+                <!-- Botón para cancelar (oculto por defecto) -->
+                <button type="button" class="btn btn-secondary" id="cancel-button" style="display: none;" onclick="resetForm()">Cancel</button>
             </form>
         </div>
         <div class="col-md-6">
@@ -65,7 +70,10 @@
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ player[0] }}" data-action="{{ url_for('admin.manage_players') }}">
+                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" 
+                                    data-id="{{ player[0] }}" 
+                                    data-action="{{ url_for('admin.manage_players') }}"
+                                    data-name="{{ player[2] }}">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </td>
@@ -83,14 +91,15 @@
         <div class="modal-content">
             <form id="deleteForm" method="POST" action="">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Player</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this item?
-                    <input type="hidden" id="deleteItemId" name="deleteEntityId">
+                    <p>Are you sure you want to delete this player?</p>
+                    <p><strong>Player:</strong> <span id="deletePlayerName"></span></p>
+                    <input type="hidden" id="deleteEntityId" name="deleteEntityId">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -109,16 +118,31 @@
         document.getElementById('position').value = position;
         document.getElementById('date_of_birth').value = date_of_birth;
         document.getElementById('nationality').value = nationality;
-        document.getElementById('submit-button').innerText = 'Update Player';
+        
         document.getElementById('form-title').innerText = 'Edit Player';
+        document.getElementById('add-button').style.display = 'none';
+        document.getElementById('update-button').style.display = 'inline-block';
+        document.getElementById('cancel-button').style.display = 'inline-block';
+    }
+    
+    function resetForm() {
+        document.getElementById('playerForm').reset();
+        document.getElementById('player_id').value = '';
+        document.getElementById('form-title').innerText = 'Add Player';
+        document.getElementById('add-button').style.display = 'inline-block';
+        document.getElementById('update-button').style.display = 'none';
+        document.getElementById('cancel-button').style.display = 'none';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
         var id = button.data('id');
         var action = button.data('action');
-        document.getElementById('deleteItemId').value = id;
+        var name = button.data('name');
+        
+        document.getElementById('deleteEntityId').value = id;
         document.getElementById('deleteForm').action = action;
+        document.getElementById('deletePlayerName').textContent = name;
     });
 </script>
 {% endblock %}

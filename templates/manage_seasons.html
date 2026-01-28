@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-6">
             <h2 id="form-title">Add Season</h2>
-            <form action="{{ url_for('admin.manage_seasons') }}" method="POST">
+            <form action="{{ url_for('admin.manage_seasons') }}" method="POST" id="seasonForm">
                 <input type="hidden" id="season_id" name="season_id">
                 <div class="form-group">
                     <label for="league_id">League:</label>
@@ -20,7 +20,12 @@
                     <label for="year">Year:</label>
                     <input type="text" class="form-control" id="year" name="year" required>
                 </div>
-                <button type="submit" name="add" class="btn btn-primary" id="submit-button">Add Season</button>
+                <!-- Botón para agregar (visible por defecto) -->
+                <button type="submit" name="add" class="btn btn-primary" id="add-button">Add Season</button>
+                <!-- Botón para editar (oculto por defecto) -->
+                <button type="submit" name="edit" class="btn btn-primary" id="edit-button" style="display: none;">Update Season</button>
+                <!-- Botón para cancelar (oculto por defecto) -->
+                <button type="button" class="btn btn-secondary" id="cancel-button" style="display: none;" onclick="resetForm()">Cancel</button>
             </form>
         </div>
         <div class="col-md-6">
@@ -47,7 +52,11 @@
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ season[0] }}" data-action="{{ url_for('admin.manage_seasons') }}">
+                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" 
+                                    data-id="{{ season[0] }}" 
+                                    data-action="{{ url_for('admin.manage_seasons') }}"
+                                    data-year="{{ season[2] }}"
+                                    data-league="{{ season[3] }}">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </td>
@@ -65,13 +74,14 @@
         <div class="modal-content">
             <form id="deleteForm" method="POST" action="">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Season</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this item?
+                    <p>Are you sure you want to delete this season?</p>
+                    <p><strong>Season:</strong> {{ league }} {{ year }}</p>
                     <input type="hidden" id="deleteItemId" name="deleteItemId">
                 </div>
                 <div class="modal-footer">
@@ -88,16 +98,37 @@
         document.getElementById('season_id').value = id;
         document.getElementById('league_id').value = league_id;
         document.getElementById('year').value = year;
-        document.getElementById('submit-button').innerText = 'Update Season';
+        
         document.getElementById('form-title').innerText = 'Edit Season';
+        document.getElementById('add-button').style.display = 'none';
+        document.getElementById('edit-button').style.display = 'inline-block';
+        document.getElementById('cancel-button').style.display = 'inline-block';
+    }
+    
+    function resetForm() {
+        document.getElementById('seasonForm').reset();
+        document.getElementById('season_id').value = '';
+        document.getElementById('form-title').innerText = 'Add Season';
+        document.getElementById('add-button').style.display = 'inline-block';
+        document.getElementById('edit-button').style.display = 'none';
+        document.getElementById('cancel-button').style.display = 'none';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
         var id = button.data('id');
         var action = button.data('action');
+        var year = button.data('year');
+        var league = button.data('league');
+        
         document.getElementById('deleteItemId').value = id;
         document.getElementById('deleteForm').action = action;
+        
+        // Actualizar el texto del modal
+        var modalBody = document.querySelector('#deleteModal .modal-body p:nth-child(2)');
+        if (modalBody) {
+            modalBody.innerHTML = '<strong>Season:</strong> ' + league + ' ' + year;
+        }
     });
 </script>
 {% endblock %}

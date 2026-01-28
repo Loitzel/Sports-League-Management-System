@@ -20,7 +20,12 @@
                     <label for="capacity">Capacity:</label>
                     <input type="number" class="form-control" id="capacity" name="capacity" required>
                 </div>
-                <button type="submit" name="add" class="btn btn-primary" id="submit-button">Add Stadium</button>
+                <!-- Botón para agregar (visible por defecto) -->
+                <button type="submit" name="add" class="btn btn-primary" id="add-button">Add Stadium</button>
+                <!-- Botón para editar (oculto por defecto) -->
+                <button type="submit" name="edit" class="btn btn-primary" id="edit-button" style="display: none;">Update Stadium</button>
+                <!-- Botón para cancelar (oculto por defecto) -->
+                <button type="button" class="btn btn-secondary" id="cancel-button" style="display: none;" onclick="resetForm()">Cancel</button>
             </form>
         </div>
         <div class="col-md-6">
@@ -49,7 +54,10 @@
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ stadium[0] }}" data-action="{{ url_for('admin.manage_stadiums') }}">
+                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" 
+                                    data-id="{{ stadium[0] }}" 
+                                    data-action="{{ url_for('admin.manage_stadiums') }}"
+                                    data-name="{{ stadium[1] }}">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </td>
@@ -70,16 +78,36 @@
         document.getElementById('name').value = name;
         document.getElementById('location').value = location;
         document.getElementById('capacity').value = capacity;
-        document.getElementById('submit-button').innerText = 'Update Stadium';
+        
         document.getElementById('form-title').innerText = 'Edit Stadium';
+        document.getElementById('add-button').style.display = 'none';
+        document.getElementById('edit-button').style.display = 'inline-block';
+        document.getElementById('cancel-button').style.display = 'inline-block';
+    }
+    
+    function resetForm() {
+        document.getElementById('stadiumForm').reset();
+        document.getElementById('stadium_id').value = '';
+        document.getElementById('form-title').innerText = 'Add Stadium';
+        document.getElementById('add-button').style.display = 'inline-block';
+        document.getElementById('edit-button').style.display = 'none';
+        document.getElementById('cancel-button').style.display = 'none';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
         var id = button.data('id');
         var action = button.data('action');
+        var name = button.data('name');
+        
         document.getElementById('deleteItemId').value = id;
         document.getElementById('deleteForm').action = action;
+        
+        // Actualizar el texto del modal si existe
+        var deleteModalLabel = document.getElementById('deleteModalLabel');
+        if (deleteModalLabel) {
+            deleteModalLabel.textContent = 'Delete Stadium: ' + name;
+        }
     });
 </script>
 {% endblock %}

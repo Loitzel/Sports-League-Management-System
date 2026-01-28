@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-6">
             <h2 id="form-title">Add Standing</h2>
-            <form action="{{ url_for('admin.manage_standings') }}" method="POST">
+            <form action="{{ url_for('admin.manage_standings') }}" method="POST" id="standingForm">
                 <input type="hidden" id="standing_id" name="standing_id">
                 <div class="form-group">
                     <label for="position">Position:</label>
@@ -56,7 +56,12 @@
                     <label for="form">Form:</label>
                     <input type="text" class="form-control" id="form" name="form" required>
                 </div>
-                <button type="submit" name="add" class="btn btn-primary" id="submit-button">Add Standing</button>
+                <!-- Botón para agregar (visible por defecto) -->
+                <button type="submit" name="add" class="btn btn-primary" id="add-button">Add Standing</button>
+                <!-- Botón para editar (oculto por defecto) -->
+                <button type="submit" name="edit" class="btn btn-primary" id="edit-button" style="display: none;">Update Standing</button>
+                <!-- Botón para cancelar (oculto por defecto) -->
+                <button type="button" class="btn btn-secondary" id="cancel-button" style="display: none;" onclick="resetForm()">Cancel</button>
             </form>
         </div>
         <div class="col-md-6">
@@ -99,7 +104,11 @@
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ standing[0] }}" data-action="{{ url_for('admin.manage_standings') }}">
+                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" 
+                                    data-id="{{ standing[0] }}" 
+                                    data-action="{{ url_for('admin.manage_standings') }}"
+                                    data-team="{{ standing[2] }}"
+                                    data-position="{{ standing[1] }}">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </td>
@@ -117,13 +126,14 @@
         <div class="modal-content">
             <form id="deleteForm" method="POST" action="">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Standing</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this item?
+                    <p>Are you sure you want to delete this standing?</p>
+                    <p><strong>Team:</strong> <span id="deleteStandingTeam"></span> (Position: <span id="deleteStandingPosition"></span>)</p>
                     <input type="hidden" id="deleteItemId" name="deleteItemId">
                 </div>
                 <div class="modal-footer">
@@ -149,16 +159,33 @@
         document.getElementById('goals_against').value = goals_against;
         document.getElementById('goal_difference').value = goal_difference;
         document.getElementById('form').value = form;
-        document.getElementById('submit-button').innerText = 'Update Standing';
+        
         document.getElementById('form-title').innerText = 'Edit Standing';
+        document.getElementById('add-button').style.display = 'none';
+        document.getElementById('edit-button').style.display = 'inline-block';
+        document.getElementById('cancel-button').style.display = 'inline-block';
+    }
+    
+    function resetForm() {
+        document.getElementById('standingForm').reset();
+        document.getElementById('standing_id').value = '';
+        document.getElementById('form-title').innerText = 'Add Standing';
+        document.getElementById('add-button').style.display = 'inline-block';
+        document.getElementById('edit-button').style.display = 'none';
+        document.getElementById('cancel-button').style.display = 'none';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
         var id = button.data('id');
         var action = button.data('action');
+        var team = button.data('team');
+        var position = button.data('position');
+        
         document.getElementById('deleteItemId').value = id;
         document.getElementById('deleteForm').action = action;
+        document.getElementById('deleteStandingTeam').textContent = team;
+        document.getElementById('deleteStandingPosition').textContent = position;
     });
 </script>
 {% endblock %}

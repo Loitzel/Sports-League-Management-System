@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-6">
             <h2 id="form-title">Add Match</h2>
-            <form action="{{ url_for('admin.manage_matches') }}" method="POST">
+            <form action="{{ url_for('admin.manage_matches') }}" method="POST" id="matchForm">
                 <input type="hidden" id="match_id" name="match_id">
                 <div class="form-group">
                     <label for="date">Date:</label>
@@ -44,7 +44,12 @@
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" name="submit" class="btn btn-primary" id="submit-button">Add Match</button>
+                <!-- Botón para agregar (visible por defecto) -->
+                <button type="submit" name="submit" class="btn btn-primary" id="add-button">Add Match</button>
+                <!-- Botón para actualizar (oculto por defecto) -->
+                <button type="submit" name="submit" class="btn btn-primary" id="update-button" style="display: none;">Update Match</button>
+                <!-- Botón para cancelar (oculto por defecto) -->
+                <button type="button" class="btn btn-secondary" id="cancel-button" style="display: none;" onclick="resetForm()">Cancel</button>
             </form>
         </div>
         <div class="col-md-6">
@@ -72,12 +77,15 @@
                         <td>{{ match[4] }}</td>
                         <td>{{ match[5] }}</td>
                         <td>
-                            <button class="btn btn-success btn-sm" onclick="editMatch('{{ match[0] }}', '{{ match[1] }}', '{{ match[6] }}', '{{ match[7] }}', '{{ match[4] }}', '{{ match[5] }}')">
+                            <button class="btn btn-success btn-sm" onclick="editMatch('{{ match[0] }}', '{{ match[1] }}', '{{ match[6] }}', '{{ match[7] }}', '{{ match[8] }}', '{{ match[9] }}')">
                                 <i class="fa fa-pencil-alt"></i>
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ match[0] }}" data-action="{{ url_for('admin.manage_matches') }}">
+                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" 
+                                    data-id="{{ match[0] }}" 
+                                    data-action="{{ url_for('admin.manage_matches') }}"
+                                    data-teams="{{ match[2] }} vs {{ match[3] }}">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </td>
@@ -95,14 +103,15 @@
         <div class="modal-content">
             <form id="deleteForm" method="POST" action="">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Match</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this item?
-                    <input type="hidden" id="deleteItemId" name="deleteEntityId">
+                    <p>Are you sure you want to delete this match?</p>
+                    <p><strong>Match:</strong> <span id="deleteMatchTeams"></span></p>
+                    <input type="hidden" id="deleteEntityId" name="deleteEntityId">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -121,16 +130,31 @@
         document.getElementById('team2_id').value = team2_id;
         document.getElementById('season_id').value = season_id;
         document.getElementById('league_id').value = league_id;
-        document.getElementById('submit-button').innerText = 'Update Match';
+        
         document.getElementById('form-title').innerText = 'Edit Match';
+        document.getElementById('add-button').style.display = 'none';
+        document.getElementById('update-button').style.display = 'inline-block';
+        document.getElementById('cancel-button').style.display = 'inline-block';
+    }
+    
+    function resetForm() {
+        document.getElementById('matchForm').reset();
+        document.getElementById('match_id').value = '';
+        document.getElementById('form-title').innerText = 'Add Match';
+        document.getElementById('add-button').style.display = 'inline-block';
+        document.getElementById('update-button').style.display = 'none';
+        document.getElementById('cancel-button').style.display = 'none';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
         var id = button.data('id');
         var action = button.data('action');
-        document.getElementById('deleteItemId').value = id;
+        var teams = button.data('teams');
+        
+        document.getElementById('deleteEntityId').value = id;
         document.getElementById('deleteForm').action = action;
+        document.getElementById('deleteMatchTeams').textContent = teams;
     });
 </script>
 {% endblock %}

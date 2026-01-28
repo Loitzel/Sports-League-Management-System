@@ -16,7 +16,12 @@
                     <label for="country">Faculty:</label>
                     <input type="text" class="form-control" id="country" name="country" required>
                 </div>
-                <button type="submit" name="add" class="btn btn-primary" id="submit-button">Add Sport</button>
+                <!-- Botón de agregar (visible por defecto) -->
+                <button type="submit" name="add" class="btn btn-primary" id="add-button">Add Sport</button>
+                <!-- Botón de editar (oculto por defecto) -->
+                <button type="submit" name="edit" class="btn btn-primary" id="edit-button" style="display: none;">Update Sport</button>
+                <!-- Botón de cancelar (oculto por defecto) -->
+                <button type="button" class="btn btn-secondary" id="cancel-button" style="display: none;" onclick="resetForm()">Cancel</button>
             </form>
         </div>
         <div class="col-md-6">
@@ -60,11 +65,32 @@
 
 <script>
     function editLeague(id, name, country) {
+        // Rellenar el formulario con los datos existentes
         document.getElementById('league_id').value = id;
         document.getElementById('name').value = name;
         document.getElementById('country').value = country;
-        document.getElementById('submit-button').innerText = 'Update Sport';
+        
+        // Cambiar el título del formulario
         document.getElementById('form-title').innerText = 'Edit Sport';
+        
+        // Mostrar botón de editar y ocultar botón de agregar
+        document.getElementById('add-button').style.display = 'none';
+        document.getElementById('edit-button').style.display = 'inline-block';
+        document.getElementById('cancel-button').style.display = 'inline-block';
+    }
+    
+    function resetForm() {
+        // Limpiar el formulario
+        document.getElementById('leagueForm').reset();
+        document.getElementById('league_id').value = '';
+        
+        // Restaurar el título del formulario
+        document.getElementById('form-title').innerText = 'Add Sport';
+        
+        // Mostrar botón de agregar y ocultar botones de editar/cancelar
+        document.getElementById('add-button').style.display = 'inline-block';
+        document.getElementById('edit-button').style.display = 'none';
+        document.getElementById('cancel-button').style.display = 'none';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {

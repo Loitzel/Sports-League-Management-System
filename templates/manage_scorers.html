@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-6">
             <h2 id="form-title">Add Scorer</h2>
-            <form action="{{ url_for('admin.manage_scorers') }}" method="POST">
+            <form action="{{ url_for('admin.manage_scorers') }}" method="POST" id="scorerForm">
                 <input type="hidden" id="scorer_id" name="scorer_id">
                 <div class="form-group">
                     <label for="player_id">Player:</label>
@@ -44,7 +44,12 @@
                     <label for="penalties">Penalties:</label>
                     <input type="number" class="form-control" id="penalties" name="penalties">
                 </div>
-                <button type="submit" name="submit" class="btn btn-primary" id="submit-button">Add Scorer</button>
+                <!-- Botón para agregar (visible por defecto) -->
+                <button type="submit" name="submit" class="btn btn-primary" id="add-button">Add Scorer</button>
+                <!-- Botón para actualizar (oculto por defecto) -->
+                <button type="submit" name="submit" class="btn btn-primary" id="update-button" style="display: none;">Update Scorer</button>
+                <!-- Botón para cancelar (oculto por defecto) -->
+                <button type="button" class="btn btn-secondary" id="cancel-button" style="display: none;" onclick="resetForm()">Cancel</button>
             </form>
         </div>
         <div class="col-md-6">
@@ -74,12 +79,15 @@
                         <td>{{ scorer[5] }}</td>
                         <td>{{ scorer[6] }}</td>
                         <td>
-                            <button class="btn btn-success btn-sm" onclick="editScorer('{{ scorer[0] }}', '{{ scorer[1] }}', '{{ scorer[2] }}', '{{ scorer[3] }}', '{{ scorer[4] }}', '{{ scorer[5] }}', '{{ scorer[6] }}')">
+                            <button class="btn btn-success btn-sm" onclick="editScorer('{{ scorer[0] }}', '{{ scorer[7] }}', '{{ scorer[8] }}', '{{ scorer[9] }}', '{{ scorer[4] }}', '{{ scorer[5] }}', '{{ scorer[6] }}')">
                                 <i class="fa fa-pencil-alt"></i>
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" data-id="{{ scorer[0] }}" data-action="{{ url_for('admin.manage_scorers') }}">
+                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal" 
+                                    data-id="{{ scorer[0] }}" 
+                                    data-action="{{ url_for('admin.manage_scorers') }}"
+                                    data-player="{{ scorer[1] }}">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </td>
@@ -97,14 +105,15 @@
         <div class="modal-content">
             <form id="deleteForm" method="POST" action="">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Scorer</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this item?
-                    <input type="hidden" id="deleteItemId" name="deleteEntityId">
+                    <p>Are you sure you want to delete this scorer record?</p>
+                    <p><strong>Player:</strong> <span id="deleteScorerPlayer"></span></p>
+                    <input type="hidden" id="deleteEntityId" name="deleteEntityId">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -124,16 +133,31 @@
         document.getElementById('goals').value = goals;
         document.getElementById('assists').value = assists;
         document.getElementById('penalties').value = penalties;
-        document.getElementById('submit-button').innerText = 'Update Scorer';
+        
         document.getElementById('form-title').innerText = 'Edit Scorer';
+        document.getElementById('add-button').style.display = 'none';
+        document.getElementById('update-button').style.display = 'inline-block';
+        document.getElementById('cancel-button').style.display = 'inline-block';
+    }
+    
+    function resetForm() {
+        document.getElementById('scorerForm').reset();
+        document.getElementById('scorer_id').value = '';
+        document.getElementById('form-title').innerText = 'Add Scorer';
+        document.getElementById('add-button').style.display = 'inline-block';
+        document.getElementById('update-button').style.display = 'none';
+        document.getElementById('cancel-button').style.display = 'none';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);
         var id = button.data('id');
         var action = button.data('action');
-        document.getElementById('deleteItemId').value = id;
+        var player = button.data('player');
+        
+        document.getElementById('deleteEntityId').value = id;
         document.getElementById('deleteForm').action = action;
+        document.getElementById('deleteScorerPlayer').textContent = player;
     });
 </script>
 {% endblock %}
