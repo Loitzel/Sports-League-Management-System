@@ -443,3 +443,88 @@ def user_scorers():
     cur.close()
 
     return render_template('user_scorers.html', scorers=scorers, sports=sports, teams=teams, str=str)
+
+
+@user_bp.route('/calendar')
+@login_required
+def calendar():
+    db = get_db()
+    cur = db.cursor()
+
+    # Fetch available sports and teams for filtering
+    cur.execute('SELECT sport_id, name FROM sports')
+    sports = cur.fetchall()
+
+    cur.execute('SELECT team_id, name FROM teams')
+    teams = cur.fetchall()
+
+    cur.close()
+
+    return render_template('calendar.html', sports=sports, teams=teams)
+
+
+@user_bp.route('/api/matches')
+@login_required
+def api_matches():
+    db = get_db()
+    cur = db.cursor()
+
+    # Get filter parameters from the request
+    sport_id = request.args.get('sport_id')
+    team_id = request.args.get('team_id')
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+
+    # Build the base query
+    query = """
+        SELECT m.match_id, 
+               t1.name AS home_team_name, 
+               t2.name AS away_team_name, 
+               s.full_time_home AS home_score, 
+               s.full_time_away AS away_score,
+               TO_CHAR(m.utc_date, 'YYYY-MM-DD') AS formatted_date,
+               m.matchday
+        FROM matches m
+        JOIN teams t1 ON m.home_team_id = t1.team_id
+        JOIN teams t2 ON m.away_team_id = t2.team_id
+        LEFT JOIN scores s ON m.match_id = s.match_id
+        WHERE 1=1
+    """
+    filters = []
+
+    # Add filters based on the selected values
+    if sport_id:
+        query += " AND m.sport_id = %s"
+        filters.append(sport_id)
+    if team_id:
+        query += " AND (m.home_team_id = %s OR m.away_team_id = %s)"
+        filters.append(team_id)
+        filters.append(team_id)
+    if date_from:
+        query += " AND m.utc_date >= %s::date"
+        filters.append(date_from)
+    if date_to:
+        query += " AND m.utc_date <= %s::date"
+        filters.append(date_to)
+
+    query += " ORDER BY m.utc_date"
+
+    cur.execute(query, filters)
+    matches = cur.fetchall()
+    cur.close()
+
+    # Convert to JSON format for FullCalendar
+    matches_json = []
+    for match in matches:
+        matches_json.append({
+            'match_id': match[0],
+            'home_team_name': match[1],
+            'away_team_name': match[2],
+            'home_score': match[3],
+            'away_score': match[4],
+            'utc_date': match[5],
+            'matchday': match[6]
+        })
+
+    from flask import jsonify
+    return jsonify(matches_json)

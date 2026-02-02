@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Calendar
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Matches Calendar</h1>
+    
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <label for="sportFilter" class="form-label">Sport</label>
+            <select id="sportFilter" class="form-select">
+                <option value="">All Sports</option>
+                {% for sport in sports %}
+                <option value="{{ sport[0] }}">{{ sport[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="teamFilter" class="form-label">Team</label>
+            <select id="teamFilter" class="form-select">
+                <option value="">All Teams</option>
+                {% for team in teams %}
+                <option value="{{ team[0] }}">{{ team[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="dateFrom" class="form-label">Date From</label>
+            <input type="date" id="dateFrom" class="form-control">
+        </div>
+        <div class="col-md-3">
+            <label for="dateTo" class="form-label">Date To</label>
+            <input type="date" id="dateTo" class="form-control">
+        </div>
+    </div>
+
+    <!-- Calendar -->
+    <div id="calendar"></div>
+</div>
+
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/main.min.css" rel="stylesheet">
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    
+    // Fetch matches data from API endpoint
+    fetch('/api/matches')
+        .then(response => response.json())
+        .then(data => {
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: data.map(function(match) {
+                    return {
+                        title: match.home_team_name + ' vs ' + match.away_team_name,
+                        start: match.utc_date,
+                        extendedProps: {
+                            matchId: match.match_id,
+                            homeTeam: match.home_team_name,
+                            awayTeam: match.away_team_name,
+                            homeScore: match.home_score,
+                            awayScore: match.away_score,
+                            matchday: match.matchday
+                        }
+                    };
+                }),
+                eventClick: function(info) {
+                    // Redirect to match profile when clicking on an event
+                    window.location.href = '/match/' + info.event.extendedProps.matchId;
+                }
+            });
+            calendar.render();
+        })
+        .catch(error => console.error('Error fetching matches:', error));
+
+    // Filter functionality
+    function applyFilters() {
+        const sportId = document.getElementById('sportFilter').value;
+        const teamId = document.getElementById('teamFilter').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        let url = '/api/matches';
+        const params = [];
+        
+        if (sportId) params.push('sport_id=' + sportId);
+        if (teamId) params.push('team_id=' + teamId);
+        if (dateFrom) params.push('date_from=' + dateFrom);
+        if (dateTo) params.push('date_to=' + dateTo);
+        
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                calendar.getEvents().forEach(event => event.remove());
+                
+                data.forEach(function(match) {
+                    calendar.addEvent({
+                        title: match.home_team_name + ' vs ' + match.away_team_name,
+                        start: match.utc_date,
+                        extendedProps: {
+                            matchId: match.match_id,
+                            homeTeam: match.home_team_name,
+                            awayTeam: match.away_team_name,
+                            homeScore: match.home_score,
+                            awayScore: match.away_score,
+                            matchday: match.matchday
+                        }
+                    });
+                });
+            })
+            .catch(error => console.error('Error fetching filtered matches:', error));
+    }
+
+    // Add event listeners to filters
+    document.getElementById('sportFilter').addEventListener('change', applyFilters);
+    document.getElementById('teamFilter').addEventListener('change', applyFilters);
+    document.getElementById('dateFrom').addEventListener('change', applyFilters);
+    document.getElementById('dateTo').addEventListener('change', applyFilters);
+});
+</script>
+{% endblock %}
