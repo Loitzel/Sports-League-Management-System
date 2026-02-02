@@ -1,0 +1,478 @@
+{% extends "layout.html" %}
+{% block title %}Match Calendar{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="fas fa-calendar-alt"></i> Match Calendar</h1>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('user.user_calendar') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="sport_id" class="form-label">Sport</label>
+                    <select class="form-select" id="sport_id" name="sport_id">
+                        <option value="">All Sports</option>
+                        {% for sport in sports %}
+                            <option value="{{ sport[0] }}" {% if selected_sport == sport[0]|string %}selected{% endif %}>
+                                {{ sport[1] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="team_id" class="form-label">Team</label>
+                    <select class="form-select" id="team_id" name="team_id">
+                        <option value="">All Teams</option>
+                        {% for team in teams %}
+                            <option value="{{ team[0] }}" {% if selected_team == team[0]|string %}selected{% endif %}>
+                                {{ team[1] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="month" class="form-label">Month</label>
+                    <select class="form-select" id="month" name="month">
+                        <option value="">All Months</option>
+                        {% for month in months %}
+                            <option value="{{ month.id }}" {% if selected_month == month.id|string %}selected{% endif %}>
+                                {{ month.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="year" class="form-label">Year</label>
+                    <select class="form-select" id="year" name="year">
+                        {% for y in years %}
+                            <option value="{{ y }}" {% if selected_year == y|string %}selected{% endif %}>
+                                {{ y }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="btn-group" role="group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Filter
+                        </button>
+                        <a href="{{ url_for('user.user_calendar') }}" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Clear
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h6 class="card-title">Total Matches</h6>
+                    <h3 class="card-text">
+                        {% set total_matches = 0 %}
+                        {% for date_str, date_matches in matches_by_date.items() %}
+                            {% set total_matches = total_matches + date_matches|length %}
+                        {% endfor %}
+                        {{ total_matches }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h6 class="card-title">Dates with Matches</h6>
+                    <h3 class="card-text">{{ matches_by_date|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h6 class="card-title">Sports</h6>
+                    <h3 class="card-text">
+                        {% set sports_set = [] %}
+                        {% for date_str, date_matches in matches_by_date.items() %}
+                            {% for match in date_matches %}
+                                {% if match.sport not in sports_set %}
+                                    {% if sports_set.append(match.sport) %}{% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        {{ sports_set|length }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h6 class="card-title">Teams</h6>
+                    <h3 class="card-text">
+                        {% set teams_set = [] %}
+                        {% for date_str, date_matches in matches_by_date.items() %}
+                            {% for match in date_matches %}
+                                {% if match.home_team not in teams_set %}
+                                    {% if teams_set.append(match.home_team) %}{% endif %}
+                                {% endif %}
+                                {% if match.away_team not in teams_set %}
+                                    {% if teams_set.append(match.away_team) %}{% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        {{ teams_set|length }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendario de Partidos -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-calendar"></i> Match Schedule</h5>
+        </div>
+        <div class="card-body">
+            {% if matches_by_date %}
+                {% for date_str, date_matches in matches_by_date.items() %}
+                    <div class="date-section mb-4">
+                        <div class="date-header bg-light p-3 rounded d-flex justify-content-between align-items-center" 
+                             style="cursor: pointer;" onclick="toggleMatches('{{ date_str }}')">
+                            <h4 class="mb-0">
+                                <i class="fas fa-calendar-day"></i> {{ date_matches[0].formatted_date }}
+                            </h4>
+                            <div>
+                                <span class="badge bg-primary">{{ date_matches|length }} match{% if date_matches|length > 1 %}es{% endif %}</span>
+                                <i class="fas fa-chevron-down ms-2" id="icon-{{ date_str }}"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3" id="matches-{{ date_str }}">
+                            {% for match in date_matches %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card match-card h-100 shadow-sm">
+                                        <div class="card-header py-2 
+                                            {% if match.home_score is not none and match.away_score is not none %}
+                                                {% if match.is_home_win %}bg-success text-white
+                                                {% elif match.is_away_win %}bg-danger text-white
+                                                {% elif match.is_draw %}bg-warning text-dark
+                                                {% else %}bg-secondary text-white{% endif %}
+                                            {% else %}
+                                                bg-info text-white
+                                            {% endif %}">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="fw-bold">
+                                                    <i class="fas fa-running"></i> {{ match.sport }}
+                                                </small>
+                                                <small>
+                                                    {% if match.matchday %}
+                                                        <span class="badge bg-light text-dark">MD {{ match.matchday }}</span>
+                                                    {% endif %}
+                                                    {% if match.season_year %}
+                                                        <span class="badge bg-light text-dark ms-1">S{{ match.season_year }}</span>
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Equipos -->
+                                            <div class="row align-items-center">
+                                                <!-- Equipo Local -->
+                                                <div class="col-5 text-end">
+                                                    <div class="fw-bold {% if match.is_home_win %}text-success{% endif %}">
+                                                        {{ match.home_team }}
+                                                    </div>
+                                                    {% if match.home_logo %}
+                                                        <img src="{{ match.home_logo }}" alt="{{ match.home_team }}" 
+                                                             class="team-logo-sm mt-1" style="max-height: 40px; max-width: 60px;">
+                                                    {% else %}
+                                                        <div class="team-placeholder mt-1" style="height: 40px;"></div>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <!-- Marcador -->
+                                                <div class="col-2 text-center">
+                                                    {% if match.home_score is not none and match.away_score is not none %}
+                                                        <div class="score-display mb-1">
+                                                            <span class="badge 
+                                                                {% if match.is_home_win %}bg-success
+                                                                {% elif match.is_away_win %}bg-danger
+                                                                {% elif match.is_draw %}bg-warning
+                                                                {% else %}bg-primary{% endif %} 
+                                                                fs-6 px-3 py-2">
+                                                                {{ match.home_score }} - {{ match.away_score }}
+                                                            </span>
+                                                        </div>
+                                                        <small class="text-muted">
+                                                            {% if match.winner == 'HOME_TEAM' %}
+                                                                <i class="fas fa-trophy text-success"></i> {{ match.home_team[:10] }}...
+                                                            {% elif match.winner == 'AWAY_TEAM' %}
+                                                                <i class="fas fa-trophy text-success"></i> {{ match.away_team[:10] }}...
+                                                            {% elif match.winner == 'DRAW' %}
+                                                                <i class="fas fa-handshake text-warning"></i> Draw
+                                                            {% else %}
+                                                                Final
+                                                            {% endif %}
+                                                        </small>
+                                                    {% else %}
+                                                        <div class="vs-text mb-1">
+                                                            <span class="badge bg-secondary fs-6 px-3 py-2">VS</span>
+                                                        </div>
+                                                        <small class="text-muted">Scheduled</small>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <!-- Equipo Visitante -->
+                                                <div class="col-5">
+                                                    <div class="fw-bold {% if match.is_away_win %}text-success{% endif %}">
+                                                        {{ match.away_team }}
+                                                    </div>
+                                                    {% if match.away_logo %}
+                                                        <img src="{{ match.away_logo }}" alt="{{ match.away_team }}" 
+                                                             class="team-logo-sm mt-1" style="max-height: 40px; max-width: 60px;">
+                                                    {% else %}
+                                                        <div class="team-placeholder mt-1" style="height: 40px;"></div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Información adicional -->
+                                            <div class="match-info mt-3">
+                                                <div class="text-muted small">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div>
+                                                            <i class="fas fa-calendar"></i> Season {{ match.season_year }}
+                                                        </div>
+                                                        <div>
+                                                            {% if match.home_score is not none %}
+                                                                <span class="badge bg-light text-dark">Completed</span>
+                                                            {% else %}
+                                                                <span class="badge bg-light text-dark">Upcoming</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-transparent text-center pt-2 pb-2">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ url_for('user.profile_match', match_id=match.id) }}" 
+                                                   class="btn btn-outline-primary">
+                                                    <i class="fas fa-info-circle"></i> Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <hr class="mt-4">
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h4>No matches found</h4>
+                    <p class="text-muted">Try adjusting your filters or select a different date range.</p>
+                    <a href="{{ url_for('user.user_calendar') }}" class="btn btn-primary mt-2">
+                        <i class="fas fa-redo"></i> Clear Filters
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Navegación por meses -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-calendar-week"></i> Quick Month Navigation</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for month in months %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('user.user_calendar', month=month.id, year=selected_year) }}" 
+                           class="btn btn-outline-info w-100 {% if selected_month == month.id|string %}active{% endif %}">
+                            {{ month.name }}
+                            {% if selected_month == month.id|string %}
+                                <i class="fas fa-check ms-1"></i>
+                            {% endif %}
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .date-header {
+        border-left: 5px solid #007bff;
+        transition: all 0.3s ease;
+    }
+    
+    .date-header:hover {
+        background-color: #e9ecef !important;
+        border-left-color: #0056b3;
+    }
+    
+    .match-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .match-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    
+    .team-logo-sm {
+        max-height: 40px;
+        max-width: 60px;
+        object-fit: contain;
+    }
+    
+    .team-placeholder {
+        background-color: #f8f9fa;
+        border: 1px dashed #dee2e6;
+        border-radius: 4px;
+    }
+    
+    .score-display .badge {
+        font-size: 1.1rem;
+        min-width: 80px;
+    }
+    
+    .vs-text .badge {
+        font-size: 1rem;
+        min-width: 80px;
+    }
+    
+    .match-info {
+        font-size: 0.85rem;
+    }
+    
+    .card-header.bg-success {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    }
+    
+    .card-header.bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    }
+    
+    .card-header.bg-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    }
+    
+    .card-header.bg-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    }
+    
+    .card-header.bg-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+    }
+    
+    .btn-group-sm .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+</style>
+
+<script>
+    // Función para expandir/contraer partidos por fecha
+    function toggleMatches(dateStr) {
+        const matchesDiv = document.getElementById('matches-' + dateStr);
+        const icon = document.getElementById('icon-' + dateStr);
+        
+        if (matchesDiv.style.display === 'none') {
+            matchesDiv.style.display = 'flex';
+            icon.className = 'fas fa-chevron-down ms-2';
+        } else {
+            matchesDiv.style.display = 'none';
+            icon.className = 'fas fa-chevron-up ms-2';
+        }
+    }
+    
+    // Colapsar todos los días al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        // Colapsar todos los días excepto el primero
+        let first = true;
+        {% for date_str, date_matches in matches_by_date.items() %}
+            const matchesDiv = document.getElementById('matches-{{ date_str }}');
+            const icon = document.getElementById('icon-{{ date_str }}');
+            
+            if (matchesDiv) {
+                if (!first) {
+                    matchesDiv.style.display = 'none';
+                    icon.className = 'fas fa-chevron-up ms-2';
+                }
+                first = false;
+            }
+        {% endfor %}
+    });
+</script>
+
+<!-- Script para imprimir calendario (CORREGIDO) -->
+<script>
+    function printCalendar() {
+        const printContent = document.querySelector('.card').outerHTML;
+        const originalContent = document.body.innerHTML;
+        
+        // Obtener el título correctamente
+        let monthName = 'All';
+        if ("{{ selected_month }}" && "{{ selected_month }}" !== 'None') {
+            const monthIndex = parseInt("{{ selected_month }}") - 1;
+            const monthsArray = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            monthName = monthsArray[monthIndex] || 'All';
+        }
+        
+        const year = "{{ selected_year }}" || new Date().getFullYear();
+        
+        document.body.innerHTML = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Match Calendar - ${monthName} ${year}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .match-card { break-inside: avoid; margin-bottom: 15px; border: 1px solid #ccc; }
+                    .date-header { background: #f5f5f5; padding: 10px; margin-top: 20px; }
+                    @media print {
+                        .btn { display: none; }
+                        .card-footer { display: none; }
+                        .date-header { cursor: default !important; }
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Match Calendar - ${monthName} ${year}</h1>
+                <p>Generated on: ${new Date().toLocaleDateString()}</p>
+                ${printContent}
+            </body>
+            </html>
+        `;
+        
+        window.print();
+        document.body.innerHTML = originalContent;
+        location.reload();
+    }
+</script>
+
+<!-- Botón de impresión (opcional) -->
+<div class="text-center mt-4">
+    <button class="btn btn-outline-dark" onclick="printCalendar()">
+        <i class="fas fa-print"></i> Print Calendar
+    </button>
+</div>
+{% endblock %}

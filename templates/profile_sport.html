@@ -1,20 +1,20 @@
 {% extends "layout.html" %}
 
-{% block title %}{{ league[0] }} - League Profile{% endblock %}
+{% block title %}{{ sport[0] }} - League Profile{% endblock %}
 {% block content %}
 <div class="container mt-4">
     <div class="row">
         <div class="col-12 mb-4">
             <div class="card border-0">
                 <div class="card-body text-center">
-                    <h1>{{ league[0] }}'s Profile</h1>
-                    {% if league[2] %}
-                        <img src="{{ league[2] }}" alt="{{ league[0] }} Logo" class="img-fluid rounded border mb-2" style="max-height: 100px;">
+                    <h1>{{ sport[0] }}'s Profile</h1>
+                    {% if sport[2] %}
+                        <img src="{{ sport[2] }}" alt="{{ sport[0] }} Logo" class="img-fluid rounded border mb-2" style="max-height: 100px;">
                     {% endif %}
-                    {% if league[3] %}
-                        <img src="{{ league[3] }}" alt="{{ league[1] }} Flag" class="img-fluid rounded border" style="max-height: 50px;">
+                    {% if sport[3] %}
+                        <img src="{{ sport[3] }}" alt="{{ sport[1] }} Flag" class="img-fluid rounded border" style="max-height: 50px;">
                     {% endif %}
-                    <p class="mt-3">This is the profile of the {{ league[0] }}. It includes the latest standings, team information, and recent match results.</p>
+                    <p class="mt-3">This is the profile of the {{ sport[0] }}. It includes the latest standings, team information, and recent match results.</p>
                 </div>
             </div>
         </div>
@@ -73,21 +73,21 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
                         <div style="width: 20px; height: 20px; background-color: #007bff; border-radius: 50%; margin-right: 10px;"></div>
-                        <span class="text-primary font-weight-bold">Top {{ league[4] }}: </span> Champions League qualification
+                        <span class="text-primary font-weight-bold">Top {{ sport[4] }}: </span> Champions League qualification
                     </div>
                     <div class="d-flex align-items-center mb-2">
                         <div style="width: 20px; height: 20px; background-color: #fd7e14; border-radius: 50%; margin-right: 10px;"></div>
-                        <span class="text-warning font-weight-bold">{{ league[5] }}th: </span> Europa League qualification
+                        <span class="text-warning font-weight-bold">{{ sport[5] }}th: </span> Europa League qualification
                     </div>
                     <div class="d-flex align-items-center mb-2">
                         <div style="width: 20px; height: 20px; background-color: #dc3545; border-radius: 50%; margin-right: 10px;"></div>
-                        <span class="text-danger font-weight-bold">Bottom {{ league[6] }}: </span> Relegation zone
+                        <span class="text-danger font-weight-bold">Bottom {{ sport[6] }}: </span> Relegation zone
                     </div>
                 </div>
             </div>
 
             {% else %}
-                <p>No standings available for this league.</p>
+                <p>No standings available for this sport.</p>
             {% endif %}
         </div>
     </div>
@@ -105,7 +105,7 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <p>No teams found in this league.</p>
+                <p>No teams found in this sport.</p>
             {% endif %}
         </div>
     </div>

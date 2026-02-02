@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for, flash
 from functools import wraps
 from db import get_db
+from datetime import datetime
 
 user_bp = Blueprint('user', __name__)
 
@@ -443,3 +444,131 @@ def user_scorers():
     cur.close()
 
     return render_template('user_scorers.html', scorers=scorers, sports=sports, teams=teams, str=str)
+
+@user_bp.route('/user/calendar')
+@login_required
+def user_calendar():
+    db = get_db()
+    cur = db.cursor()
+
+    # Obtener parámetros de filtro
+    sport_id = request.args.get('sport_id')
+    team_id = request.args.get('team_id')
+    month = request.args.get('month')
+    year = request.args.get('year', datetime.now().year, type=int)
+
+    # Obtener deportes y equipos para filtros
+    cur.execute('SELECT sport_id, name FROM sports')
+    sports = cur.fetchall()
+
+    cur.execute('SELECT team_id, name FROM teams')
+    teams = cur.fetchall()
+
+    # Construir consulta base CORREGIDA según estructura real
+    query = """
+        SELECT m.match_id, 
+               m.utc_date,
+               t1.name AS home_team_name,
+               t2.name AS away_team_name,
+               t1.crestURL AS home_team_logo,
+               t2.crestURL AS away_team_logo,
+               s.full_time_home,
+               s.full_time_away,
+               sp.name AS sport_name,
+               m.matchday,
+               m.winner,
+               se.year AS season_year
+        FROM matches m
+        JOIN teams t1 ON m.home_team_id = t1.team_id
+        JOIN teams t2 ON m.away_team_id = t2.team_id
+        JOIN sports sp ON m.sport_id = sp.sport_id
+        LEFT JOIN scores s ON m.match_id = s.match_id
+        LEFT JOIN seasons se ON m.season_id = se.season_id
+        WHERE 1=1
+    """
+    filters = []
+
+    # Aplicar filtros
+    if sport_id:
+        query += " AND m.sport_id = %s"
+        filters.append(sport_id)
+    if team_id:
+        query += " AND (m.home_team_id = %s OR m.away_team_id = %s)"
+        filters.append(team_id)
+        filters.append(team_id)
+    if month:
+        query += " AND EXTRACT(MONTH FROM m.utc_date) = %s"
+        filters.append(month)
+    if year:
+        query += " AND EXTRACT(YEAR FROM m.utc_date) = %s"
+        filters.append(year)
+
+    query += " ORDER BY m.utc_date ASC, m.matchday ASC"
+
+    cur.execute(query, filters)
+    matches = cur.fetchall()
+
+    # Organizar partidos por fecha
+    matches_by_date = {}
+    for match in matches:
+        match_date = match[1].strftime('%Y-%m-%d')
+        if match_date not in matches_by_date:
+            matches_by_date[match_date] = []
+        
+        # Determinar el ganador para estilos CSS
+        winner = match[10]  # columna winner
+        is_home_win = winner == "HOME_TEAM"
+        is_away_win = winner == "AWAY_TEAM"
+        is_draw = winner == "DRAW"
+        
+        matches_by_date[match_date].append({
+            'id': match[0],
+            'date': match[1],
+            'home_team': match[2],
+            'away_team': match[3],
+            'home_logo': match[4],
+            'away_logo': match[5],
+            'home_score': match[6],
+            'away_score': match[7],
+            'sport': match[8],
+            'matchday': match[9],
+            'winner': winner,
+            'season_year': match[11],
+            'is_home_win': is_home_win,
+            'is_away_win': is_away_win,
+            'is_draw': is_draw,
+            'formatted_date': match[1].strftime('%A, %B %d, %Y')
+        })
+
+    cur.close()
+
+    # Meses para el dropdown
+    months = [
+        {'id': 1, 'name': 'Enero'},
+        {'id': 2, 'name': 'Febrero'},
+        {'id': 3, 'name': 'Marzo'},
+        {'id': 4, 'name': 'Abril'},
+        {'id': 5, 'name': 'Mayo'},
+        {'id': 6, 'name': 'Junio'},
+        {'id': 7, 'name': 'Julio'},
+        {'id': 8, 'name': 'Agosto'},
+        {'id': 9, 'name': 'Septiembre'},
+        {'id': 10, 'name': 'Octubre'},
+        {'id': 11, 'name': 'Noviembre'},
+        {'id': 12, 'name': 'Diciembre'}
+    ]
+
+    # Años disponibles (últimos 2 y próximos 2 años)
+    current_year = datetime.now().year
+    years = list(range(current_year - 2, current_year + 3))
+
+    return render_template('user_calendar.html',
+                         matches_by_date=matches_by_date,
+                         sports=sports,
+                         teams=teams,
+                         months=months,
+                         years=years,
+                         selected_sport=sport_id,
+                         selected_team=team_id,
+                         selected_month=month,
+                         selected_year=year)

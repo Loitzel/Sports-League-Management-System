@@ -4,11 +4,11 @@
 <form method="get" action="{{ url_for('user.user_matches') }}">
     <div class="form-row">
         <div class="form-group col-md-3">
-            <label for="league_id">League</label>
-            <select id="league_id" name="league_id" class="form-control">
+            <label for="sport_id">League</label>
+            <select id="sport_id" name="sport_id" class="form-control">
                 <option value="">All Sports</option>
-                {% for league in leagues %}
-                    <option value="{{ league[0] }}" {% if request.args.get('league_id') == str(league[0]) %}selected{% endif %}>{{ league[1] }}</option>
+                {% for sport in sports %}
+                    <option value="{{ sport[0] }}" {% if request.args.get('sport_id') == str(sport[0]) %}selected{% endif %}>{{ sport[1] }}</option>
                 {% endfor %}
             </select>
         </div>

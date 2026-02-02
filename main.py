@@ -211,9 +211,9 @@ def search():
             ('%' + query + '%', ))
         results.extend(cur.fetchall())
 
-        # Search in leagues
+        # Search in sports
         cur.execute(
-            "SELECT league_id, name, 'league' AS source FROM leagues WHERE name ILIKE %s",
+            "SELECT sport_id, name, 'sport' AS source FROM sports WHERE name ILIKE %s",
             ('%' + query + '%', ))
         results.extend(cur.fetchall())
 

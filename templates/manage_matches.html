@@ -37,10 +37,10 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="league_id">League:</label>
-                    <select class="form-control" id="league_id" name="league_id" required>
-                        {% for league in leagues %}
-                        <option value="{{ league[0] }}">{{ league[1] }}</option>
+                    <label for="sport_id">League:</label>
+                    <select class="form-control" id="sport_id" name="sport_id" required>
+                        {% for sport in sports %}
+                        <option value="{{ sport[0] }}">{{ sport[1] }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -123,13 +123,13 @@
 </div>
 
 <script>
-    function editMatch(id, date, team1_id, team2_id, season_id, league_id) {
+    function editMatch(id, date, team1_id, team2_id, season_id, sport_id) {
         document.getElementById('match_id').value = id;
         document.getElementById('date').value = date;
         document.getElementById('team1_id').value = team1_id;
         document.getElementById('team2_id').value = team2_id;
         document.getElementById('season_id').value = season_id;
-        document.getElementById('league_id').value = league_id;
+        document.getElementById('sport_id').value = sport_id;
         
         document.getElementById('form-title').innerText = 'Edit Match';
         document.getElementById('add-button').style.display = 'none';
