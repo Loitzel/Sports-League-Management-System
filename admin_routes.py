@@ -450,31 +450,38 @@ def manage_players():
         cur.close()
     return render_template('manage_players.html', players=players, teams=teams, is_admin=is_admin(), is_editor=is_editor())
 
-# --- Gestión de ÁRBITROS ---
 @admin_bp.route('/manage_referees', methods=['GET', 'POST'])
 @admin_required
 def manage_referees():
     logger.info(f"Iniciando gestión de árbitros - Método: {request.method}")
     db = get_db()
     cur = db.cursor()
+    
     if request.method == 'POST':
         try:
             referee_id = request.form.get('referee_id')
             name = request.form['name']
             logger.info(f"Procesando árbitro - ID: {referee_id}, Nombre: {name}")
-            if 'submit' in request.form:
-                if referee_id:
-                    logger.info(f"Editando árbitro ID: {referee_id}")
-                    cur.execute('UPDATE referees SET name = %s WHERE referee_id = %s', (name, referee_id))
-                    flash('Referee updated successfully', 'success')
-                else:
-                    if not is_admin():
-                        logger.warning(f"Editor intentó agregar árbitro sin permisos: {session.get('user_id')}")
-                        flash('Only administrators can add new referees', 'error')
-                        return redirect(url_for('admin.manage_referees'))
-                    cur.execute('INSERT INTO referees (name) VALUES (%s)', (name,))
-                    logger.info(f"Árbitro agregado: {name}")
-                    flash('Referee added successfully', 'success')
+            
+            if 'add' in request.form:
+                if not is_admin():
+                    logger.warning(f"Editor intentó agregar árbitro sin permisos: {session.get('user_id')}")
+                    flash('Only administrators can add new referees', 'error')
+                    return redirect(url_for('admin.manage_referees'))
+                
+                # 👇 Generar el próximo ID automáticamente
+                cur.execute('SELECT COALESCE(MAX(referee_id), 0) + 1 FROM referees')
+                next_id = cur.fetchone()[0]
+                
+                cur.execute('INSERT INTO referees (referee_id, name) VALUES (%s, %s)', (next_id, name))
+                logger.info(f"Árbitro agregado: {name} con ID {next_id}")
+                flash('Referee added successfully', 'success')
+            
+            elif 'submit' in request.form and referee_id:
+                logger.info(f"Editando árbitro ID: {referee_id}")
+                cur.execute('UPDATE referees SET name = %s WHERE referee_id = %s', (name, referee_id))
+                flash('Referee updated successfully', 'success')
+            
             elif 'delete' in request.form:
                 if not is_admin():
                     logger.warning(f"Editor intentó eliminar árbitro sin permisos: {session.get('user_id')}")
@@ -484,14 +491,17 @@ def manage_referees():
                 logger.info(f"Eliminando árbitro ID: {referee_id}")
                 cur.execute('DELETE FROM referees WHERE referee_id = %s', (referee_id,))
                 flash('Referee deleted successfully', 'success')
+            
             db.commit()
             logger.debug("Transacción de árbitros completada exitosamente")
+        
         except Exception as e:
             db.rollback()
             logger.error(f"Error en gestión de árbitros: {str(e)}", exc_info=True)
             flash('An error occurred: ' + str(e), 'error')
         finally:
             cur.close()
+        
         return redirect(url_for('admin.manage_referees'))
 
     # GET
@@ -504,15 +514,16 @@ def manage_referees():
         referees = []
     finally:
         cur.close()
+    
     return render_template('manage_referees.html', referees=referees, is_admin=is_admin(), is_editor=is_editor())
 
-# --- Gestión de PARTIDOS ---
 @admin_bp.route('/manage_matches', methods=['GET', 'POST'])
 @admin_required
 def manage_matches():
     logger.info(f"Iniciando gestión de partidos - Método: {request.method}")
     db = get_db()
     cur = db.cursor()
+    
     if request.method == 'POST':
         try:
             match_id = request.form.get('match_id')
@@ -521,57 +532,101 @@ def manage_matches():
             team2_id = request.form['team2_id']
             season_id = request.form['season_id']
             sport_id = request.form['sport_id']
+            stadium_id = request.form.get('stadium_id')  # 👈 NUEVO: obtener stadium_id
+            
+            logger.info(f"Procesando partido - ID: {match_id}, Estadio ID: {stadium_id}")
+            
             if 'submit' in request.form:
                 if match_id:
-                    cur.execute('UPDATE matches SET utc_date = %s, home_team_id = %s, away_team_id = %s, season_id = %s, sport_id = %s WHERE match_id = %s',
-                                (date, team1_id, team2_id, season_id, sport_id, match_id))
+                    # 👇 ACTUALIZADO: incluir stadium_id en UPDATE
+                    cur.execute('''
+                        UPDATE matches 
+                        SET utc_date = %s, home_team_id = %s, away_team_id = %s, 
+                            season_id = %s, sport_id = %s, stadium_id = %s 
+                        WHERE match_id = %s
+                    ''', (date, team1_id, team2_id, season_id, sport_id, stadium_id, match_id))
                     flash('Match updated successfully', 'success')
                 else:
                     if not is_admin():
                         flash('Only administrators can add new matches', 'error')
                         return redirect(url_for('admin.manage_matches'))
-                    cur.execute('INSERT INTO matches (utc_date, home_team_id, away_team_id, season_id, sport_id) VALUES (%s, %s, %s, %s, %s)',
-                                (date, team1_id, team2_id, season_id, sport_id))
+                    # 👇 ACTUALIZADO: incluir stadium_id en INSERT
+                    cur.execute('''
+                        INSERT INTO matches 
+                        (utc_date, home_team_id, away_team_id, season_id, sport_id, stadium_id) 
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    ''', (date, team1_id, team2_id, season_id, sport_id, stadium_id))
                     flash('Match added successfully', 'success')
+            
             elif 'delete' in request.form:
                 if not is_admin():
                     flash('Only administrators can delete matches', 'error')
                     return redirect(url_for('admin.manage_matches'))
                 match_id = request.form['deleteEntityId']
+                logger.info(f"Eliminando partido ID: {match_id}")
                 cur.execute('DELETE FROM matches WHERE match_id = %s', (match_id,))
                 flash('Match deleted successfully', 'success')
+            
             db.commit()
+            logger.debug("Transacción de partidos completada exitosamente")
+        
         except Exception as e:
             db.rollback()
+            logger.error(f"Error en gestión de partidos: {str(e)}", exc_info=True)
             flash('An error occurred: ' + str(e), 'error')
         finally:
             cur.close()
         return redirect(url_for('admin.manage_matches'))
-
-    # GET
+    
+    # GET - obtener datos para mostrar en el formulario
     try:
+        # 👇 ACTUALIZADO: incluir stadium_id en la consulta
         cur.execute('''
-            SELECT m.match_id, m.utc_date, t1.name AS team1, t2.name AS team2, s.year AS season, sp.name AS sport,
-                   m.home_team_id, m.away_team_id
+            SELECT m.match_id, m.utc_date, m.home_team_id, m.away_team_id, 
+                   m.season_id, m.sport_id, m.stadium_id,
+                   ht.name AS home_team_name, at.name AS away_team_name,
+                   s.name AS stadium_name
             FROM matches m
-            JOIN teams t1 ON m.home_team_id = t1.team_id
-            JOIN teams t2 ON m.away_team_id = t2.team_id
-            JOIN seasons s ON m.season_id = s.season_id
-            JOIN sports sp ON m.sport_id = sp.sport_id
+            LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+            LEFT JOIN teams at ON m.away_team_id = at.team_id
+            LEFT JOIN stadiums s ON m.stadium_id = s.stadium_id
+            ORDER BY m.utc_date DESC
         ''')
         matches = cur.fetchall()
-        cur.execute('SELECT team_id, name FROM teams')
+        
+        cur.execute('SELECT team_id, name FROM teams ORDER BY name')
         teams = cur.fetchall()
-        cur.execute('SELECT season_id, year FROM seasons')
+        
+        cur.execute('SELECT season_id, year FROM seasons ORDER BY year DESC')
         seasons = cur.fetchall()
-        cur.execute('SELECT sport_id, name FROM sports')
+        
+        cur.execute('SELECT sport_id, name FROM sports ORDER BY name')
         sports = cur.fetchall()
+        
+        # 👇 NUEVO: obtener lista de estadios para el dropdown
+        cur.execute('SELECT stadium_id, name, location FROM stadiums ORDER BY name')
+        stadiums = cur.fetchall()
+        
+        logger.debug(f"Obtenidos {len(matches)} partidos, {len(teams)} equipos, {len(stadiums)} estadios")
+    
     except Exception as e:
-        matches, teams, seasons, sports = [], [], [], []
+        logger.error(f"Error al obtener datos de partidos: {str(e)}")
+        matches, teams, seasons, sports, stadiums = [], [], [], [], []  # 👈 stadiums incluido
     finally:
         cur.close()
-    return render_template('manage_matches.html', matches=matches, teams=teams, seasons=seasons, sports=sports, is_admin=is_admin(), is_editor=is_editor())
-
+    
+    # 👇 ACTUALIZADO: pasar stadiums al template
+    return render_template(
+        'manage_matches.html', 
+        matches=matches, 
+        teams=teams, 
+        seasons=seasons, 
+        sports=sports, 
+        stadiums=stadiums,  # 👈 NUEVO parámetro
+        is_admin=is_admin(), 
+        is_editor=is_editor()
+    )
+    
 # --- Gestión de ESTADIOS ---
 @admin_bp.route('/manage_stadiums', methods=['GET', 'POST'])
 @admin_required
@@ -630,16 +685,17 @@ def manage_stadiums():
         cur.close()
     return render_template('manage_stadiums.html', stadiums=stadiums, is_admin=is_admin(), is_editor=is_editor())
 
-# --- Gestión de CLASIFICACIONES (STANDINGS) ---
 @admin_bp.route('/manage_standings', methods=['GET', 'POST'])
 @admin_required
 def manage_standings():
     logger.info(f"Iniciando gestión de posiciones - Método: {request.method}")
     db = get_db()
     cur = db.cursor()
+    
     if request.method == 'POST':
         try:
             standing_id = request.form.get('standing_id')
+            season_id = request.form['season_id']  # 👈 NUEVO
             position = request.form['position']
             team_id = request.form['team_id']
             played_games = request.form['played_games']
@@ -650,63 +706,89 @@ def manage_standings():
             goals_for = request.form['goals_for']
             goals_against = request.form['goals_against']
             goal_difference = request.form['goal_difference']
-            form = request.form['form']
-            logger.info(f"Procesando posición - ID: {standing_id}, Equipo: {team_id}, Puntos: {points}")
+            form_str = request.form['form']
+            
+            # Convertir string a array de caracteres: "WWLD" → ['W','W','L','D']
+            form_array = list(form_str) if form_str else []
+            
+            logger.info(f"Procesando standing - ID: {standing_id}, Season: {season_id}, Equipo: {team_id}, Form: {form_array}")
+            
             if 'add' in request.form:
                 if not is_admin():
-                    logger.warning(f"Editor intentó agregar posición sin permisos: {session.get('user_id')}")
+                    logger.warning(f"Editor intentó agregar standing sin permisos: {session.get('user_id')}")
                     flash('Only administrators can add new standings', 'error')
                     return redirect(url_for('admin.manage_standings'))
+                
                 cur.execute('''
-                    INSERT INTO standings (position, team_id, played_games, won, draw, lost, points, goals_for, goals_against, goal_difference, form)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ''', (position, team_id, played_games, won, draw, lost, points, goals_for, goals_against, goal_difference, form))
-                logger.info(f"Posición agregada para equipo {team_id}: Posición {position}, {points} puntos")
+                    INSERT INTO standings 
+                    (season_id, position, team_id, played_games, won, draw, lost, points, 
+                     goals_for, goals_against, goal_difference, form)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ''', (season_id, position, team_id, played_games, won, draw, lost, points,
+                      goals_for, goals_against, goal_difference, form_array))
+                
+                logger.info(f"Standing agregado para temporada {season_id}, equipo {team_id}")
                 flash('Standing added successfully', 'success')
+            
             elif 'edit' in request.form and standing_id:
-                logger.info(f"Editando posición ID: {standing_id}")
-                cur.execute('''UPDATE standings
-                    SET position = %s, team_id = %s, played_games = %s, won = %s, draw = %s, lost = %s, points = %s, goals_for = %s, goals_against = %s, goal_difference = %s, form = %s
-                    WHERE standing_id = %s''',
-                    (position, team_id, played_games, won, draw, lost, points, goals_for, goals_against, goal_difference, form, standing_id))
+                logger.info(f"Editando standing ID: {standing_id}")
+                cur.execute('''
+                    UPDATE standings 
+                    SET season_id = %s, position = %s, team_id = %s, played_games = %s, won = %s, 
+                        draw = %s, lost = %s, points = %s, goals_for = %s, 
+                        goals_against = %s, goal_difference = %s, form = %s
+                    WHERE standing_id = %s
+                ''', (season_id, position, team_id, played_games, won, draw, lost, points,
+                      goals_for, goals_against, goal_difference, form_array, standing_id))
                 flash('Standing updated successfully', 'success')
+            
             elif 'delete' in request.form:
                 if not is_admin():
-                    logger.warning(f"Editor intentó eliminar posición sin permisos: {session.get('user_id')}")
+                    logger.warning(f"Editor intentó eliminar standing sin permisos: {session.get('user_id')}")
                     flash('Only administrators can delete standings', 'error')
                     return redirect(url_for('admin.manage_standings'))
                 standing_id = request.form['deleteItemId']
-                logger.info(f"Eliminando posición ID: {standing_id}")
+                logger.info(f"Eliminando standing ID: {standing_id}")
                 cur.execute('DELETE FROM standings WHERE standing_id = %s', (standing_id,))
                 flash('Standing deleted successfully', 'success')
+            
             db.commit()
-            logger.debug("Transacción de posiciones completada exitosamente")
+            logger.debug("Transacción de standings completada exitosamente")
+        
         except Exception as e:
             db.rollback()
-            logger.error(f"Error en gestión de posiciones: {str(e)}", exc_info=True)
+            logger.error(f"Error en gestión de standings: {str(e)}", exc_info=True)
             flash('An error occurred: ' + str(e), 'error')
         finally:
             cur.close()
+        
         return redirect(url_for('admin.manage_standings'))
 
     # GET
     try:
         cur.execute('''
-            SELECT s.standing_id, s.position, t.name, s.played_games, s.won, s.draw, s.lost, s.points, s.goals_for, s.goals_against, s.goal_difference, s.form, s.team_id
-            FROM standings s
-            JOIN teams t ON s.team_id = t.team_id
+            SELECT standing_id, season_id, position, team_id, played_games, won, draw, lost, 
+                   points, goals_for, goals_against, goal_difference, form
+            FROM standings
+            ORDER BY season_id DESC, position ASC
         ''')
         standings = cur.fetchall()
-        cur.execute('SELECT team_id, name FROM teams')
+        
+        cur.execute('SELECT team_id, name FROM teams ORDER BY name')
         teams = cur.fetchall()
-        logger.debug(f"Obtenidas {len(standings)} posiciones para mostrar")
+        
+        # 👈 NUEVO: obtener temporadas
+        cur.execute('SELECT season_id, year FROM seasons ORDER BY year DESC')
+        seasons = cur.fetchall()
+        
+        logger.debug(f"Obtenidos {len(standings)} standings, {len(teams)} equipos, {len(seasons)} temporadas")
     except Exception as e:
-        logger.error(f"Error al obtener posiciones/equipos: {str(e)}")
-        standings = []
-        teams = []
+        logger.error(f"Error al obtener standings: {str(e)}")
+        standings, teams, seasons = [], [], []
     finally:
         cur.close()
-    return render_template('manage_standings.html', standings=standings, teams=teams, is_admin=is_admin(), is_editor=is_editor())
+    
+    return render_template('manage_standings.html', standings=standings, teams=teams, seasons=seasons, is_admin=is_admin(), is_editor=is_editor())
 
 # --- Gestión de GOLEADORES ---
 @admin_bp.route('/manage_scorers', methods=['GET', 'POST'])
@@ -851,44 +933,57 @@ def manage_scores():
         cur.close()
     return render_template('manage_scores.html', scores=scores, matches=matches, is_admin=is_admin(), is_editor=is_editor())
 
-# --- Gestión de USUARIOS ---
 @admin_bp.route('/manage_users', methods=['GET', 'POST'])
 @admin_required
 def manage_users():
     logger.info(f"Iniciando gestión de usuarios - Método: {request.method}")
     db = get_db()
     cur = db.cursor()
+    
     if request.method == 'POST':
         try:
-            user_id = request.form.get('user_id')
-            admin_status = request.form.get('is_admin') == 'on'
-            editor_status = request.form.get('is_editor') == 'on'
-            logger.info(f"Actualizando usuario ID: {user_id} - Admin: {admin_status}, Editor: {editor_status}")
             if not session.get('is_admin'):
                 logger.warning(f"Editor intentó modificar privilegios de usuario: {session.get('user_id')}")
                 flash('Only administrators can modify user privileges', 'error')
                 return redirect(url_for('admin.manage_users'))
-            cur.execute('UPDATE users SET is_admin = %s, is_editor = %s WHERE user_id = %s',
-                        (admin_status, editor_status, user_id))
+            
+            user_id = request.form.get('user_id')
+            role = request.form.get('role')  # "user", "editor", o "admin"
+            
+            logger.info(f"Actualizando usuario ID: {user_id} - Rol: {role}")
+            
+            if role == 'admin':
+                cur.execute('UPDATE users SET is_admin = 1, is_editor = 0 WHERE user_id = %s', (user_id,))
+                flash('User role updated to Administrator', 'success')
+            elif role == 'editor':
+                cur.execute('UPDATE users SET is_admin = 0, is_editor = 1 WHERE user_id = %s', (user_id,))
+                flash('User role updated to Editor', 'success')
+            else:  # 'user' o cualquier otro valor
+                cur.execute('UPDATE users SET is_admin = 0, is_editor = 0 WHERE user_id = %s', (user_id,))
+                flash('User role updated to Usuario', 'success')
+            
             db.commit()
-            logger.info(f"Privilegios actualizados para usuario {user_id}")
-            flash('User privilege updated successfully', 'success')
+            logger.info(f"Rol actualizado para usuario {user_id}")
+            
         except Exception as e:
             db.rollback()
             logger.error(f"Error en gestión de usuarios: {str(e)}", exc_info=True)
             flash('An error occurred: ' + str(e), 'error')
         finally:
             cur.close()
+        
         return redirect(url_for('admin.manage_users'))
-
+    
     # GET
     try:
-        cur.execute('SELECT user_id, username, is_admin, is_editor FROM users')
+        cur.execute('SELECT user_id, username, email, is_admin, is_editor FROM users')
         users = cur.fetchall()
+        logger.debug(users)
         logger.debug(f"Obtenidos {len(users)} usuarios para mostrar")
     except Exception as e:
         logger.error(f"Error al obtener usuarios: {str(e)}")
         users = []
     finally:
         cur.close()
-    return render_template('manage_users.html', users=users, is_admin=is_admin(), is_editor=is_editor())
+    
+    return render_template('manage_users.html', users=users, is_admin=is_admin())

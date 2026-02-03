@@ -12,15 +12,7 @@
                     <label for="name">Name:</label>
                     <input type="text" class="form-control" id="name" name="name" required>
                 </div>
-                <div class="form-group">
-                    <label for="country">Faculty:</label>
-                    <input type="text" class="form-control" id="country" name="country" required>
-                </div>
-                <!-- Botón de agregar (visible por defecto) -->
-                <button type="submit" name="add" class="btn btn-primary" id="add-button">Add Sport</button>
-                <!-- Botón de editar (oculto por defecto) -->
-                <button type="submit" name="edit" class="btn btn-primary" id="edit-button" style="display: none;">Update Sport</button>
-                <!-- Botón de cancelar (oculto por defecto) -->
+                <button type="submit" name="submit" class="btn btn-primary" id="add-button">Add Sport</button>
                 <button type="button" class="btn btn-secondary" id="cancel-button" style="display: none;" onclick="resetForm()">Cancel</button>
             </form>
         </div>
@@ -31,7 +23,6 @@
                     <tr>
                         <th>ID</th>
                         <th>Name</th>
-                        <th>Faculty</th>
                         <th>Edit</th>
                         <th>Delete</th>
                     </tr>
@@ -41,9 +32,8 @@
                     <tr>
                         <td>{{ sport[0] }}</td>
                         <td>{{ sport[1] }}</td>
-                        <td>{{ sport[2] }}</td>
                         <td>
-                            <button class="btn btn-success btn-sm" onclick="editLeague('{{ sport[0] }}', '{{ sport[1] }}', '{{ sport[2] }}')">
+                            <button class="btn btn-success btn-sm" onclick="editSport('{{ sport[0] }}', '{{ sport[1] }}')">
                                 <i class="fa fa-pencil-alt"></i>
                             </button>
                         </td>
@@ -64,33 +54,18 @@
 {% include 'delete_modal.html' %}
 
 <script>
-    function editLeague(id, name, country) {
-        // Rellenar el formulario con los datos existentes
+    function editSport(id, name) {
         document.getElementById('sport_id').value = id;
         document.getElementById('name').value = name;
-        document.getElementById('country').value = country;
-        
-        // Cambiar el título del formulario
         document.getElementById('form-title').innerText = 'Edit Sport';
-        
-        // Mostrar botón de editar y ocultar botón de agregar
-        document.getElementById('add-button').style.display = 'none';
-        document.getElementById('edit-button').style.display = 'inline-block';
-        document.getElementById('cancel-button').style.display = 'inline-block';
+        document.getElementById('add-button').innerText = 'Update Sport';
     }
     
     function resetForm() {
-        // Limpiar el formulario
         document.getElementById('sportForm').reset();
         document.getElementById('sport_id').value = '';
-        
-        // Restaurar el título del formulario
         document.getElementById('form-title').innerText = 'Add Sport';
-        
-        // Mostrar botón de agregar y ocultar botones de editar/cancelar
-        document.getElementById('add-button').style.display = 'inline-block';
-        document.getElementById('edit-button').style.display = 'none';
-        document.getElementById('cancel-button').style.display = 'none';
+        document.getElementById('add-button').innerText = 'Add Sport';
     }
 
     $('#deleteModal').on('show.bs.modal', function (event) {
