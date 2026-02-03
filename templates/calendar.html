@@ -1,0 +1,556 @@
+{% extends "layout.html" %}
+
+{% block title %}Calendario Deportivo{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #E63946;
+        --secondary: #1D3557;
+        --accent: #457B9D;
+        --light: #A8DADC;
+        --bg: #F1FAEE;
+        --gold: #FFD700;
+        --bronze: #CD7F32;
+        --purple: #6A4C93;
+        --dark: #14213D;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Montserrat', 'Segoe UI', sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, var(--bg) 0%, #d4e6f1 100%);
+        color: var(--secondary);
+        line-height: 1.6;
+        padding-top: 20px;
+    }
+
+    .header {
+        background: linear-gradient(120deg, var(--primary), var(--accent));
+        color: white;
+        padding: 2rem 0;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .logo {
+        font-size: 2.8rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    .subtitle {
+        font-size: 1.3rem;
+        opacity: 0.95;
+        margin-top: 0.5rem;
+        font-weight: 300;
+        letter-spacing: 1px;
+    }
+
+    .container {
+        max-width: 1600px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .legend-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        padding: 1.5rem;
+        margin-bottom: 1.8rem;
+    }
+
+    .legend-title {
+        font-size: 1.4rem;
+        color: var(--secondary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .legend-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.8rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .legend-color {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .nav-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    .nav-btn {
+        padding: 0.8rem 1.8rem;
+        border: none;
+        border-radius: 50px;
+        background: var(--accent);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-btn:hover {
+        background: var(--secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .current-period {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--secondary);
+    }
+
+    .controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.8rem;
+        flex-wrap: wrap;
+        gap: 1.2rem;
+        background: white;
+        padding: 1.2rem 1.8rem;
+        border-radius: 15px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    .search-container {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .search-box {
+        padding: 0.9rem 1.4rem;
+        border: 2px solid var(--accent);
+        border-radius: 50px;
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.3s;
+        width: 280px;
+    }
+
+    .search-box:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.15);
+    }
+
+    .calendar-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        overflow: hidden;
+        margin-bottom: 2.5rem;
+    }
+
+    .calendar-header {
+        background: linear-gradient(120deg, var(--secondary), #2A4365);
+        color: white;
+        padding: 1.4rem 1.8rem;
+        text-align: center;
+        font-size: 1.7rem;
+        font-weight: 700;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: 150px repeat(7, 1fr);
+        gap: 1px;
+        background: #e8eef4;
+        position: relative;
+    }
+
+    .calendar-header-cell {
+        background: var(--secondary);
+        color: white;
+        padding: 1rem 0.3rem;
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        position: sticky;
+        top: 68px;
+        z-index: 25;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 70px;
+    }
+
+    .calendar-header-cell .date {
+        font-size: 1.3rem;
+        font-weight: 800;
+        margin-bottom: 0.2rem;
+    }
+
+    .calendar-header-cell .day {
+        font-size: 0.85rem;
+        opacity: 0.85;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .calendar-header-cell.weekend {
+        background: #264653;
+    }
+
+    .sport-name {
+        background: var(--dark);
+        color: white;
+        padding: 1rem;
+        font-weight: 700;
+        text-align: center;
+        position: sticky;
+        left: 0;
+        z-index: 20;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 70px;
+    }
+
+    .calendar-cell {
+        background: white;
+        padding: 0.6rem;
+        text-align: center;
+        font-size: 0.8rem;
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.4rem;
+        cursor: default;
+        transition: all 0.25s;
+        position: relative;
+        overflow-y: auto;
+        border: 1px solid #f0f0f0;
+    }
+
+    .calendar-cell:hover {
+        background: var(--light);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        z-index: 15;
+    }
+
+    .match-item {
+        background: var(--accent);
+        color: white;
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        cursor: pointer;
+        margin: 0.3rem 0;
+        transition: all 0.25s;
+        border: 1px solid rgba(255,255,255,0.3);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: 95%;
+        text-align: center;
+    }
+
+    .match-item:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .match-item .teams {
+        font-size: 0.75rem;
+        opacity: 0.95;
+        margin-top: 0.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @media (max-width: 1200px) {
+        .calendar-grid {
+            grid-template-columns: 120px repeat(7, 1fr);
+        }
+        .legend-grid {
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        }
+    }
+
+    @media (max-width: 992px) {
+        .calendar-container {
+            overflow-x: auto;
+        }
+        .nav-controls, .controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .search-box {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .calendar-grid {
+            grid-template-columns: 100px repeat(7, 1fr);
+        }
+        .match-details {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .calendar-grid {
+            grid-template-columns: 80px repeat(7, 1fr);
+        }
+        .modal-title {
+            font-size: 1.7rem;
+        }
+    }
+</style>
+
+<header class="header">
+    <div class="header-content">
+        <div class="logo">🏆 Calendario Deportivo</div>
+        <div class="subtitle">Partidos por Fecha</div>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Leyenda de Deportes -->
+    <div class="legend-container">
+        <div class="legend-title">
+            <span>📖</span> Leyenda de Deportes
+        </div>
+        <div class="legend-grid">
+            {% for sport in sports %}
+                <div class="legend-item">
+                    <div class="legend-color" style="background: {{ ['#FF6B6B', '#4ECDC4', '#457B9D', '#FFD166', '#9B5DE5', '#06D6A0', '#118AB2', '#EF476F'][loop.index0 % 8] }}">
+                        {{ sport[1][:1]|upper }}
+                    </div>
+                    <span>{{ sport[1] }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Controles de Navegación -->
+    <div class="nav-controls">
+        <a href="{{ url_for('admin.calendar', year=prev_week.year, month=prev_week.month, day=prev_week.day) }}" class="nav-btn">
+            <i class="fas fa-arrow-left"></i> Semana Anterior
+        </a>
+        <div class="current-period">
+            Semana del {{ week_dates[0].day_num }} al {{ week_dates[6].day_num }} de {{ current_month_name }}
+        </div>
+        <a href="{{ url_for('admin.calendar', year=next_week.year, month=next_week.month, day=next_week.day) }}" class="nav-btn">
+            Próxima Semana <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <!-- Controles de Búsqueda -->
+    <div class="controls">
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput" placeholder="Buscar partido, equipo o deporte...">
+        </div>
+    </div>
+
+    <!-- Calendario -->
+    <div class="calendar-container">
+        <div class="calendar-header">Calendario de Partidos - Semana Actual</div>
+        <div class="calendar-grid">
+            <!-- Header - Días de la semana -->
+            <div class="sport-name">Deporte</div>
+            {% for day in week_dates %}
+                <div class="calendar-header-cell {% if day.is_weekend %}weekend{% endif %}">
+                    <span class="date">{{ day.day_num }}</span>
+                    <span class="day">{{ day.day_name }}</span>
+                </div>
+            {% endfor %}
+
+            <!-- Partidos por día -->
+            <div class="sport-name">Partidos</div>
+            {% for day in week_dates %}
+                <div class="calendar-cell" data-date="{{ day.date_str }}">
+                    {% if day.date_str in matches_by_date %}
+                        {% for match in matches_by_date[day.date_str] %}
+                            <div class="match-item" 
+                                 data-match-id="{{ match.match_id }}"
+                                 data-home-team="{{ match.home_team }}"
+                                 data-away-team="{{ match.away_team }}"
+                                 data-sport="{{ match.sport_name }}"
+                                 data-stadium="{{ match.stadium_name }}"
+                                 data-date="{{ match.date }}">
+                                <div>{{ match.sport_name[:1]|upper }}</div>
+                                <div class="teams">{{ match.home_team }} vs {{ match.away_team }}</div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="color: #aaa; font-style: italic;">Sin partidos</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Modal SIMPLE con estilos inline -->
+    <div id="simpleModal" style="display:none;">
+        <div style="position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); 
+                    background:white; border-radius:20px; width:90%; max-width:800px; 
+                    max-height:90vh; overflow-y:auto; padding:20px; 
+                    box-shadow:0 20px 60px rgba(0,0,0,0.3); z-index:999999;">
+            <div style="background:linear-gradient(120deg, #1D3557, #2A4365); color:white; 
+                        padding:20px; position:relative; text-align:center; border-radius:15px 15px 0 0;">
+                <button onclick="document.getElementById('simpleModal').style.display='none'" 
+                        style="position:absolute; top:14px; right:14px; background:rgba(255,255,255,0.2); 
+                               border:none; color:white; width:42px; height:42px; border-radius:50%; 
+                               cursor:pointer; font-size:1.5rem;">&times;</button>
+                <h2 id="modalTitle" style="font-size:2rem; margin-bottom:0.6rem; font-weight:800;"></h2>
+                <div id="modalSport" style="font-size:1.2rem; opacity:0.9; margin-bottom:0.5rem; font-weight:300;"></div>
+                <div id="modalDate" style="background:rgba(255,255,255,0.2); display:inline-block; 
+                                          padding:0.4rem 1.3rem; border-radius:30px; margin-top:0.8rem; 
+                                          font-size:1.15rem;"></div>
+            </div>
+            <div style="padding:20px;">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
+                    <div style="background:#A8DADC; padding:1.5rem; border-radius:12px; border-left:4px solid #457B9D;">
+                        <h3 style="font-size:1.1rem; margin-bottom:0.8rem; color:#1D3557;"><i class="fas fa-home"></i> Local</h3>
+                        <p id="modalHomeTeam" style="font-size:1rem; line-height:1.6;">-</p>
+                    </div>
+                    <div style="background:#A8DADC; padding:1.5rem; border-radius:12px; border-left:4px solid #457B9D;">
+                        <h3 style="font-size:1.1rem; margin-bottom:0.8rem; color:#1D3557;"><i class="fas fa-plane"></i> Visitante</h3>
+                        <p id="modalAwayTeam" style="font-size:1rem; line-height:1.6;">-</p>
+                    </div>
+                    <div style="background:#A8DADC; padding:1.5rem; border-radius:12px; border-left:4px solid #457B9D;">
+                        <h3 style="font-size:1.1rem; margin-bottom:0.8rem; color:#1D3557;"><i class="fas fa-trophy"></i> Deporte</h3>
+                        <p id="modalSportName" style="font-size:1rem; line-height:1.6;">-</p>
+                    </div>
+                    <div style="background:#A8DADC; padding:1.5rem; border-radius:12px; border-left:4px solid #457B9D;">
+                        <h3 style="font-size:1.1rem; margin-bottom:0.8rem; color:#1D3557;"><i class="fas fa-map-marker-alt"></i> Estadio</h3>
+                        <p id="modalStadium" style="font-size:1rem; line-height:1.6;">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Helper para nombre de mes
+    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    
+    // Event delegation for match items
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.match-item')) {
+            const matchItem = e.target.closest('.match-item');
+            
+            const homeTeam = matchItem.dataset.homeTeam;
+            const awayTeam = matchItem.dataset.awayTeam;
+            const sport = matchItem.dataset.sport;
+            const stadium = matchItem.dataset.stadium || 'No especificado';
+            const dateStr = matchItem.dataset.date;
+            
+            // Parse date
+            const date = new Date(dateStr);
+            const formattedDate = `${date.getDate()} de ${monthNames[date.getMonth()]} de ${date.getFullYear()}`;
+            
+            // Llenar el modal
+            document.getElementById('modalTitle').textContent = `${homeTeam} vs ${awayTeam}`;
+            document.getElementById('modalSport').textContent = sport;
+            document.getElementById('modalDate').textContent = formattedDate;
+            document.getElementById('modalHomeTeam').textContent = homeTeam;
+            document.getElementById('modalAwayTeam').textContent = awayTeam;
+            document.getElementById('modalSportName').textContent = sport;
+            document.getElementById('modalStadium').textContent = stadium;
+            
+            // Mostrar modal
+            document.getElementById('simpleModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+    });
+    
+    // Cerrar al hacer clic fuera del modal
+    document.getElementById('simpleModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        
+        if (searchTerm === '') {
+            document.querySelectorAll('.match-item').forEach(item => {
+                item.style.display = 'block';
+            });
+            return;
+        }
+        
+        document.querySelectorAll('.match-item').forEach(item => {
+            const homeTeam = item.dataset.homeTeam.toLowerCase();
+            const awayTeam = item.dataset.awayTeam.toLowerCase();
+            const sport = item.dataset.sport.toLowerCase();
+            
+            const matchesSearch = 
+                homeTeam.includes(searchTerm) ||
+                awayTeam.includes(searchTerm) ||
+                sport.includes(searchTerm);
+            
+            item.style.display = matchesSearch ? 'block' : 'none';
+        });
+    });
+</script>
+{% endblock %}

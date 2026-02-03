@@ -987,3 +987,105 @@ def manage_users():
         cur.close()
     
     return render_template('manage_users.html', users=users, is_admin=is_admin())
+
+from datetime import datetime, timedelta
+
+from datetime import datetime, timedelta
+
+@admin_bp.route('/calendar')
+@admin_bp.route('/calendar/<int:year>/<int:month>/<int:day>')
+def calendar(year=None, month=None, day=None):
+    logger.info("Accediendo al calendario deportivo público")
+    db = get_db()
+    cur = db.cursor()
+    
+    # Determinar fecha de inicio (lunes de la semana actual o especificada)
+    if year and month and day:
+        target_date = datetime(year, month, day)
+        # Encontrar el lunes de esa semana
+        start_date = target_date - timedelta(days=target_date.weekday())
+    else:
+        today = datetime.now()
+        start_date = today - timedelta(days=today.weekday())  # Lunes actual
+    
+    start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_date = start_date + timedelta(days=7)
+    
+    # Fechas para navegación
+    prev_week = start_date - timedelta(days=7)
+    next_week = start_date + timedelta(days=7)
+    
+    try:
+        # Obtener partidos por fecha (solo DATE)
+        cur.execute('''
+            SELECT 
+                m.match_id,
+                m.utc_date::date,
+                ht.name AS home_team,
+                at.name AS away_team,
+                s.name AS sport_name,
+                st.name AS stadium_name
+            FROM matches m
+            LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+            LEFT JOIN teams at ON m.away_team_id = at.team_id
+            LEFT JOIN sports s ON m.sport_id = s.sport_id
+            LEFT JOIN stadiums st ON m.stadium_id = st.stadium_id
+            WHERE m.utc_date::date >= %s AND m.utc_date::date < %s
+            ORDER BY m.utc_date::date ASC
+        ''', (start_date, end_date))
+        matches = cur.fetchall()
+        
+        # Obtener deportes únicos para la leyenda
+        cur.execute('SELECT sport_id, name FROM sports ORDER BY name')
+        sports = cur.fetchall()
+        
+        logger.debug(f"Calendario: {len(matches)} partidos, {len(sports)} deportes")
+    except Exception as e:
+        logger.error(f"Error al obtener datos del calendario: {str(e)}")
+        matches, sports = [], []
+    finally:
+        cur.close()
+    
+    # Agrupar partidos por fecha
+    matches_by_date = {}
+    for match in matches:
+        date_str = match[1].strftime('%Y-%m-%d')
+        if date_str not in matches_by_date:
+            matches_by_date[date_str] = []
+        matches_by_date[date_str].append({
+            'match_id': match[0],
+            'date': match[1].strftime('%Y-%m-%d'),
+            'home_team': match[2] or 'TBD',
+            'away_team': match[3] or 'TBD',
+            'sport_name': match[4] or 'Unknown',
+            'stadium_name': match[5] or 'TBD'
+        })
+    
+    # Generar fechas de la semana (Lun-Dom)
+    week_dates = []
+    for i in range(7):
+        current_date = start_date + timedelta(days=i)
+        week_dates.append({
+            'date_str': current_date.strftime('%Y-%m-%d'),
+            'day_num': current_date.strftime('%d'),
+            'day_name': current_date.strftime('%a'),
+            'is_weekend': current_date.weekday() >= 5
+        })
+    
+    # Nombre del mes en español
+    month_names = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    current_month_name = month_names[start_date.month]
+    
+    return render_template(
+        'calendar.html',
+        matches_by_date=matches_by_date,
+        sports=sports,
+        week_dates=week_dates,
+        start_date=start_date.strftime('%Y-%m-%d'),
+        current_month_name=current_month_name,
+        prev_week={'year': prev_week.year, 'month': prev_week.month, 'day': prev_week.day},
+        next_week={'year': next_week.year, 'month': next_week.month, 'day': next_week.day},
+        is_admin=is_admin(),
+        is_editor=is_editor()
+    )
