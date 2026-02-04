@@ -56,8 +56,8 @@ ALTER SEQUENCE public.coaches_coach_id_seq OWNED BY public.coaches.coach_id;
 --
 
 CREATE TABLE public.faculties (
-    faculty_id integer NOT NULL,
-    name character varying(255) NOT NULL
+    faculty_id SERIAL PRIMARY KEY,
+    name character varying(255) NOT NULL UNIQUE
 );
 
 
@@ -133,7 +133,8 @@ CREATE TABLE public.matches (
     home_team_id integer,
     away_team_id integer,
     winner character varying(50),
-    utc_date date
+    utc_date timestamp without time zone,
+    stadium_id integer 
 );
 
 
@@ -9841,8 +9842,8 @@ ALTER TABLE ONLY public.coaches
 -- Name: faculties countries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.faculties
-    ADD CONSTRAINT countries_pkey PRIMARY KEY (faculty_id);
+--ALTER TABLE ONLY public.faculties
+--    ADD CONSTRAINT countries_pkey PRIMARY KEY (faculty_id);
 
 
 --
@@ -10131,4 +10132,12 @@ ALTER TABLE ONLY public.teams
 --
 -- PostgreSQL database dump complete
 --
+
+ALTER TABLE ONLY public.matches
+    ADD CONSTRAINT fk_match_stadium 
+    FOREIGN KEY (stadium_id) 
+    REFERENCES public.stadiums(stadium_id) 
+    ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_matches_stadium ON public.matches(stadium_id);
 

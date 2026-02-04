@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block title %}Commentator Assignments - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Commentator Assignments</h2>
+    
+    {% if session.get('is_admin') %}
+        <div class="mb-3">
+            <a href="{{ url_for('admin.assign_commentator') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> New Assignment
+            </a>
+        </div>
+    {% endif %}
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    {% if assignments %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Commentator</th>
+                        <th>Match</th>
+                        <th>Date</th>
+                        <th>Stream Window</th>
+                        <th>Status</th>
+                        {% if session.get('is_admin') %}
+                            <th>Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td>{{ assignment[0] }}</td>
+                        <td>
+                            <strong>{{ assignment[1] }}</strong><br>
+                            <small class="text-muted">{{ assignment[2] }}</small>
+                        </td>
+                        <td>{{ assignment[4] }} vs {{ assignment[5] }}</td>
+                        <td>{{ assignment[6].strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {{ assignment[7].strftime('%H:%M') }} - {{ assignment[8].strftime('%H:%M') }}
+                        </td>
+                        <td>
+                            {% if assignment[9] == 'active' %}
+                                <span class="badge bg-success">Active</span>
+                            {% elif assignment[9] == 'cancelled' %}
+                                <span class="badge bg-danger">Cancelled</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ assignment[9] }}</span>
+                            {% endif %}
+                        </td>
+                        {% if session.get('is_admin') %}
+                            <td>
+                                <!-- Botones para editar/cancelar (opcional) -->
+                                <form method="POST" action="{{ url_for('admin.update_assignment_status') }}" style="display: inline;">
+                                    <input type="hidden" name="assignment_id" value="{{ assignment[0] }}">
+                                    <input type="hidden" name="status" value="cancelled">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                            onclick="return confirm('Cancel this assignment?')">
+                                        Cancel
+                                    </button>
+                                </form>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No commentator assignments found.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

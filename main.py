@@ -55,8 +55,8 @@ def login():
         db = get_db()
         cur = db.cursor()
         cur.execute(
-            'SELECT user_id, username, email, password, is_admin, is_editor FROM users WHERE username = %s',
-            (username,))
+        'SELECT user_id, username, password, is_admin, is_editor, is_commentator FROM users WHERE username = %s',
+        (username, ))
         user = cur.fetchone()
         cur.close()
         
@@ -73,17 +73,19 @@ def login():
             # Login exitoso vía LDAP
             session['user_id'] = user[0]
             session['username'] = user[1]
-            session['is_admin'] = user[4]
-            session['is_editor'] = user[5]
+            session['is_admin'] = user[3]          
+            session['is_editor'] = user[4]         
+            session['is_commentator'] = user[5]   
             return redirect(url_for('home'))
         else:
             # Si falla LDAP, intentar con contraseña local (bcrypt)
-            if user[3] and bcrypt.checkpw(password.encode('utf-8'), user[3].encode('utf-8')):
+            if user[2] and bcrypt.checkpw(password.encode('utf-8'), user[2].encode('utf-8')):
                 logger.info(f"Local authentication successful for user: {username}")
                 session['user_id'] = user[0]
                 session['username'] = user[1]
-                session['is_admin'] = user[4]
-                session['is_editor'] = user[5]
+                session['is_admin'] = user[3]
+                session['is_editor'] = user[4]
+                session['is_commentator'] = user[5]  
                 return redirect(url_for('home'))
             else:
                 logger.warning(f"Authentication failed for user: {username} - invalid credentials")

@@ -990,8 +990,6 @@ def manage_users():
 
 from datetime import datetime, timedelta
 
-from datetime import datetime, timedelta
-
 @admin_bp.route('/calendar')
 @admin_bp.route('/calendar/<int:year>/<int:month>/<int:day>')
 def calendar(year=None, month=None, day=None):
@@ -1150,3 +1148,165 @@ def add_user():
     
     # GET: mostrar formulario
     return render_template('add_user.html')
+
+@admin_bp.route('/commentator_assignments')
+@admin_required
+def commentator_assignments():
+    db = get_db()
+    cur = db.cursor()
+    
+    try:
+        # Obtener todas las asignaciones con detalles
+        cur.execute('''
+            SELECT 
+                ca.id,
+                u.username as commentator_name,
+                u.email as commentator_email,
+                m.match_id,
+                ht.name as home_team,
+                at.name as away_team,
+                m.utc_date,
+                ca.start_time,
+                ca.end_time,
+                ca.status,
+                creator.username as created_by_name
+            FROM commentator_assignments ca
+            JOIN users u ON ca.user_id = u.user_id
+            JOIN matches m ON ca.match_id = m.match_id
+            LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+            LEFT JOIN teams at ON m.away_team_id = at.team_id
+            LEFT JOIN users creator ON ca.created_by = creator.user_id
+            ORDER BY ca.start_time DESC
+        ''')
+        assignments = cur.fetchall()
+        
+    except Exception as e:
+        logger.error(f"Error fetching assignments: {str(e)}")
+        assignments = []
+    finally:
+        cur.close()
+    
+    return render_template('commentator_assignments.html', assignments=assignments)
+
+@admin_bp.route('/assign_commentator', methods=['GET', 'POST'])
+@admin_required
+def assign_commentator():
+    db = get_db()
+    cur = db.cursor()
+    
+    if request.method == 'POST':
+        try:
+            user_id = request.form.get('user_id')
+            match_id = request.form.get('match_id')
+            start_time = request.form.get('start_time')
+            end_time = request.form.get('end_time')
+            
+            if not user_id or not match_id or not start_time or not end_time:
+                flash('All fields are required', 'error')
+                return redirect(url_for('admin.assign_commentator'))
+            
+            # Verificar que el usuario es comentarista
+            cur.execute('SELECT is_commentator FROM users WHERE user_id = %s', (user_id,))
+            user_result = cur.fetchone()
+            if not user_result or not user_result[0]:
+                flash('Selected user is not a commentator', 'error')
+                return redirect(url_for('admin.assign_commentator'))
+            
+            # Verificar que el partido existe
+            cur.execute('SELECT match_id FROM matches WHERE match_id = %s', (match_id,))
+            match_result = cur.fetchone()
+            if not match_result:
+                flash('Invalid match', 'error')
+                return redirect(url_for('admin.assign_commentator'))
+            
+            # Crear la asignación
+            cur.execute('''
+                INSERT INTO commentator_assignments (user_id, match_id, start_time, end_time, created_by)
+                VALUES (%s, %s, %s, %s, %s)
+            ''', (user_id, match_id, start_time, end_time, session.get('user_id')))
+            
+            db.commit()
+            flash('Commentator assigned successfully', 'success')
+            
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Error assigning commentator: {str(e)}")
+            flash('Error assigning commentator', 'error')
+        finally:
+            cur.close()
+        
+        return redirect(url_for('admin.commentator_assignments'))
+    
+    else:  # GET request
+        try:
+            # Obtener partidos programados (últimos 7 días y próximos 30 días)
+            cur.execute('''
+                SELECT 
+                    match_id, 
+                    home_team_id, 
+                    away_team_id, 
+                    utc_date,
+                    CASE 
+                        WHEN utc_date < NOW() - INTERVAL '2 hours' THEN 'completed'
+                        WHEN utc_date BETWEEN NOW() - INTERVAL '2 hours' AND NOW() + INTERVAL '3 hours' THEN 'live'
+                        ELSE 'scheduled'
+                    END as status,
+                    ht.name as home_team, 
+                    at.name as away_team
+                FROM matches m
+                LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+                LEFT JOIN teams at ON m.away_team_id = at.team_id
+                WHERE utc_date >= NOW() - INTERVAL '7 days'
+                  AND utc_date <= NOW() + INTERVAL '30 days'
+                ORDER BY utc_date ASC
+            ''')
+            matches = cur.fetchall()
+            
+            # Obtener comentaristas disponibles
+            cur.execute('''
+                SELECT user_id, username, email 
+                FROM users 
+                WHERE is_commentator = true 
+                ORDER BY username
+            ''')
+            commentators = cur.fetchall()
+            
+        except Exception as e:
+            logger.error(f"Error fetching data for assignment: {str(e)}")
+            matches, commentators = [], []
+        finally:
+            cur.close()
+        
+        return render_template('assign_commentator.html', matches=matches, commentators=commentators)
+
+@admin_bp.route('/update_assignment_status', methods=['POST'])
+@admin_required
+def update_assignment_status():
+    db = get_db()
+    cur = db.cursor()
+    
+    try:
+        assignment_id = request.form.get('assignment_id')
+        status = request.form.get('status')
+        
+        if status not in ['cancelled', 'completed']:
+            flash('Invalid status', 'error')
+            return redirect(url_for('admin.commentator_assignments'))
+        
+        cur.execute('''
+            UPDATE commentator_assignments 
+            SET status = %s 
+            WHERE id = %s
+        ''', (status, assignment_id))
+        
+        db.commit()
+        flash('Assignment status updated successfully', 'success')
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error updating assignment status: {str(e)}")
+        flash('Error updating assignment status', 'error')
+    finally:
+        cur.close()
+    
+    return redirect(url_for('admin.commentator_assignments'))

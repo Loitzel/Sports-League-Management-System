@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}Assign Commentator - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Assign Commentator to Match</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.assign_commentator') }}">
+                <div class="mb-3">
+                    <label for="match_id" class="form-label">Select Match</label>
+                    <select class="form-select" id="match_id" name="match_id" required>
+                        <option value="">Choose a match...</option>
+                        {% for match in matches %}
+                            <option value="{{ match[0] }}">
+                                {{ match[5] }} vs {{ match[6] }} - {{ match[3].strftime('%Y-%m-%d %H:%M') }} ({{ match[4] }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="user_id" class="form-label">Select Commentator</label>
+                    <select class="form-select" id="user_id" name="user_id" required>
+                        <option value="">Choose a commentator...</option>
+                        {% for commentator in commentators %}
+                            <option value="{{ commentator[0] }}">{{ commentator[1] }} ({{ commentator[2] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="start_time" class="form-label">Start Time</label>
+                        <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="end_time" class="form-label">End Time</label>
+                        <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Assign Commentator</button>
+                <a href="{{ url_for('admin.commentator_assignments') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
