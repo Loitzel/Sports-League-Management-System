@@ -1089,3 +1089,64 @@ def calendar(year=None, month=None, day=None):
         is_admin=is_admin(),
         is_editor=is_editor()
     )
+
+@admin_bp.route('/add_user', methods=['GET', 'POST'])
+@admin_required
+def add_user():
+    """
+    Permite a los administradores añadir nuevos usuarios usando su username de LDAP.
+    Los usuarios se crean como editores por defecto y se obtiene su email desde LDAP.
+    """
+    if not session.get('is_admin'):
+        flash('Only administrators can add new users', 'error')
+        return redirect(url_for('admin.manage_users'))
+    
+    if request.method == 'POST':
+        try:
+            username = request.form['username'].strip()
+            
+            if not username:
+                flash('Username is required', 'error')
+                return redirect(url_for('admin.add_user'))
+            
+            db = get_db()
+            cur = db.cursor()
+            
+            # Verificar si el usuario ya existe en la base de datos local
+            cur.execute('SELECT user_id FROM users WHERE username = %s', (username,))
+            existing_user = cur.fetchone()
+            
+            if existing_user:
+                flash('User already exists in the system', 'error')
+                return redirect(url_for('admin.add_user'))
+            
+            # Obtener información del usuario desde LDAP
+            from ldap_auth import get_user_info
+            user_info = get_user_info(username)
+
+            if not user_info:
+                flash('User not found in LDAP. Only existing LDAP users can be added.', 'error')
+                return redirect(url_for('admin.add_user'))
+
+            email = user_info.get('email', f'{username}@uh.cu') if user_info else f'{username}@uh.cu'
+            
+            # Crear usuario como editor por defecto (sin contraseña local para autenticación LDAP)
+            cur.execute(
+                'INSERT INTO users (username, password, email, is_admin, is_editor) VALUES (%s, %s, %s, %s, %s)',
+                (username, '', email, False, True)
+            )
+            db.commit()
+            cur.close()
+            
+            logger.info(f"Admin {session.get('user_id')} created new editor user: {username}")
+            flash(f'User {username} added successfully as editor', 'success')
+            return redirect(url_for('admin.add_user'))
+            
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Error creating user {username}: {str(e)}", exc_info=True)
+            flash('Failed to add user. Please check the username and try again.', 'error')
+            return redirect(url_for('admin.add_user'))
+    
+    # GET: mostrar formulario
+    return render_template('add_user.html')

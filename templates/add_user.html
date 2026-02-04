@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}Add User - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Add New User</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <p class="text-muted">
+                Only users created here can log in. New users will be created as <strong>editors</strong> by default.
+                The system will fetch the email from LDAP automatically.
+            </p>
+            
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username (CI or UH username)</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                    <div class="form-text">Enter the exact username as it appears in LDAP/SIGENU</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Add User</button>
+                <a href="{{ url_for('admin') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} mt-3">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}
